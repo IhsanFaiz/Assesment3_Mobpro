@@ -1,5 +1,6 @@
 package com.ihsanfaiz0048.assesment2mobpro.ui.screen
 
+import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -38,12 +39,15 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.ihsanfaiz0048.assesment2mobpro.R
-import com.ihsanfaiz0048.assesment2mobpro.model.Catatan
+import com.ihsanfaiz0048.assesment2mobpro.model.Menu
 import com.ihsanfaiz0048.assesment2mobpro.navigation.Screen
+import com.ihsanfaiz0048.assesment2mobpro.ui.theme.Assesment2MobproTheme
 import com.ihsanfaiz0048.assesment2mobpro.util.SettingsDataStore
 import com.ihsanfaiz0048.assesment2mobpro.util.ViewModelFactory
 import kotlinx.coroutines.CoroutineScope
@@ -128,7 +132,7 @@ fun ScreenContent(showList: Boolean,modifier: Modifier = Modifier, navController
                 contentPadding = PaddingValues(bottom = 84.dp)
             ) {
                 items(data){
-                    ListItem(catatan = it){
+                    ListItem(menu = it){
                         navController.navigate(Screen.FormUbah.withId(it.id))
                     }
                     HorizontalDivider()
@@ -143,7 +147,7 @@ fun ScreenContent(showList: Boolean,modifier: Modifier = Modifier, navController
                 contentPadding = PaddingValues(8.dp, 8.dp, 8.dp, 84.dp)
             ) {
                 items(data){
-                    GridItem(catatan = it){
+                    GridItem(menu = it){
                         navController.navigate(Screen.FormUbah.withId(it.id))
                     }
                 }
@@ -153,7 +157,7 @@ fun ScreenContent(showList: Boolean,modifier: Modifier = Modifier, navController
 }
 
 @Composable
-fun ListItem(catatan: Catatan, onClick: () -> Unit){
+fun ListItem(menu: Menu, onClick: () -> Unit){
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -162,22 +166,26 @@ fun ListItem(catatan: Catatan, onClick: () -> Unit){
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ){
         Text(
-            text = catatan.judul,
+            text = menu.nama,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             fontWeight = FontWeight.Bold
         )
         Text(
-            text = catatan.catatan,
+            text = menu.deskripsi,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis
         )
-        Text(text = catatan.tanggal)
+        Text(
+            text = "Rp " + menu.harga.toString(),
+            overflow = TextOverflow.Ellipsis,
+            fontWeight = FontWeight.Bold
+        )
     }
 }
 
 @Composable
-fun GridItem(catatan: Catatan, onClick: () -> Unit){
+fun GridItem(menu: Menu, onClick: () -> Unit){
     Card(
         modifier = Modifier.fillMaxWidth().clickable{onClick()},
         colors = CardDefaults.cardColors(
@@ -190,17 +198,30 @@ fun GridItem(catatan: Catatan, onClick: () -> Unit){
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                text = catatan.judul,
-                maxLines = 2,
+                text = menu.nama,
+                maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = catatan.catatan,
-                maxLines = 4,
-                overflow = TextOverflow.Ellipsis,
+                text = menu.deskripsi,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
             )
-            Text(text = catatan.tanggal)
+            Text(
+                text = "Rp " + menu.harga.toString(),
+                fontWeight = FontWeight.Bold,
+                overflow = TextOverflow.Ellipsis
+            )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
+@Composable
+fun MainScreenPreview() {
+    Assesment2MobproTheme{
+        MainScreen(rememberNavController())
     }
 }

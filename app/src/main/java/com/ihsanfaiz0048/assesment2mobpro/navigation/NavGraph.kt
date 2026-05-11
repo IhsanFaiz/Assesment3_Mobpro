@@ -7,7 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.ihsanfaiz0048.assesment2mobpro.ui.screen.DetailScreen
+//import com.ihsanfaiz0048.assesment2mobpro.ui.screen.DetailScreen
 import com.ihsanfaiz0048.assesment2mobpro.ui.screen.MainScreen
 
 @Composable
@@ -20,7 +20,7 @@ fun SetupNavGraph(navController: NavHostController = rememberNavController()){
             MainScreen(navController)
         }
         composable(route = Screen.FormBaru.route) {
-            DetailScreen(navController)
+//            DetailScreen(navController)
         }
         composable(
             route = Screen.FormUbah.route,
@@ -29,7 +29,7 @@ fun SetupNavGraph(navController: NavHostController = rememberNavController()){
             )
         ) { navBackStackEntry ->
             val id = navBackStackEntry.arguments?.getLong(KEY_ID_CATATAN)
-            DetailScreen(navController, id)
+//            DetailScreen(navController, id)
         }
     }
 }

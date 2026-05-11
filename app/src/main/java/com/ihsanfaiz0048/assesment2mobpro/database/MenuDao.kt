@@ -12,6 +12,9 @@ interface MenuDao {
     @Insert
     suspend fun insert(menu: Menu)
 
+    @Insert
+    suspend fun insertAll(menu: List<Menu>)
+
     @Update
     suspend fun update(menu: Menu)
 
