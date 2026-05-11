@@ -3,7 +3,7 @@ package com.ihsanfaiz0048.assesment2mobpro.util
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.ihsanfaiz0048.assesment2mobpro.database.CatatanDb
+import com.ihsanfaiz0048.assesment2mobpro.database.CafeDb
 import com.ihsanfaiz0048.assesment2mobpro.ui.screen.DetailViewModel
 import com.ihsanfaiz0048.assesment2mobpro.ui.screen.MainViewModel
 
@@ -12,7 +12,7 @@ class ViewModelFactory(
 ) : ViewModelProvider.Factory {
     @Suppress("unchecked_cast")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        val dao = CatatanDb.getInstance(context).dao
+        val dao = CafeDb.getInstance(context).dao
         if (modelClass.isAssignableFrom(MainViewModel::class.java)) {
             return MainViewModel(dao) as T
         } else if (modelClass.isAssignableFrom(DetailViewModel::class.java)){
