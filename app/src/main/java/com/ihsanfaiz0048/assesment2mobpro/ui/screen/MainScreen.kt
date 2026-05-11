@@ -1,11 +1,9 @@
 package com.ihsanfaiz0048.assesment2mobpro.ui.screen
 
 import android.content.res.Configuration
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -28,17 +27,13 @@ import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.SettingsInputComponent
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -72,6 +67,8 @@ import com.ihsanfaiz0048.assesment2mobpro.R
 import com.ihsanfaiz0048.assesment2mobpro.model.Menu
 import com.ihsanfaiz0048.assesment2mobpro.navigation.Screen
 import com.ihsanfaiz0048.assesment2mobpro.ui.theme.Assesment2MobproTheme
+import com.ihsanfaiz0048.assesment2mobpro.ui.theme.MainGreen
+import com.ihsanfaiz0048.assesment2mobpro.ui.theme.TextGreen
 import com.ihsanfaiz0048.assesment2mobpro.util.SettingsDataStore
 import com.ihsanfaiz0048.assesment2mobpro.util.ViewModelFactory
 import kotlinx.coroutines.CoroutineScope
@@ -88,11 +85,15 @@ fun MainScreen(navController: NavHostController){
         topBar = {
             TopAppBar(
                 title = {
-                    Text(text = stringResource(id = R.string.app_name))
+                    Text(
+                        text = stringResource(id = R.string.app_name),
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.headlineSmall
+                    )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.primary
+                    containerColor = Color.MainGreen,
+                    titleContentColor = Color.TextGreen
                 ),
                 actions = {
                     IconButton(onClick = {
@@ -109,14 +110,14 @@ fun MainScreen(navController: NavHostController){
                                 if (showList) R.string.grid
                                 else R.string.list
                             ),
-                            tint = MaterialTheme.colorScheme.primary
+                            tint = Color.TextGreen
                         )
                     }
                     IconButton(onClick = {}) {
                         Icon(
                             imageVector = Icons.Outlined.History,
                             contentDescription = stringResource(R.string.history),
-                            tint = MaterialTheme.colorScheme.primary
+                            tint = Color.TextGreen
                         )
                     }
                 }
@@ -160,10 +161,10 @@ fun ScreenContent(showList: Boolean,modifier: Modifier = Modifier, navController
                     ) {
                         Button(
                             onClick = {filtered = "Semua"},
-                            modifier = Modifier.padding(8.dp),
+                            modifier = Modifier.padding(8.dp).border(2.dp, Color.MainGreen, RoundedCornerShape(100.dp)),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.surface
+                                containerColor = MaterialTheme.colorScheme.surface,
+                                contentColor = Color.MainGreen
                             )
                         ) {
                             Icon(
@@ -173,44 +174,82 @@ fun ScreenContent(showList: Boolean,modifier: Modifier = Modifier, navController
                         }
                         Button(
                             onClick = {filtered = "Makanan"},
-                            modifier = Modifier.padding(8.dp),
+                            modifier = Modifier.padding(8.dp).border(2.dp, Color.MainGreen, RoundedCornerShape(100.dp)),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.surface,
+                                contentColor = Color.MainGreen
+                            )
                         ) {
-                            Text(text = stringResource(R.string.makanan))
+                            Text(text = stringResource(R.string.makanan), fontWeight = FontWeight.Bold)
                         }
                         Button(
                             onClick = {filtered = "Minuman"},
-                            modifier = Modifier.padding(8.dp)
+                            modifier = Modifier.padding(8.dp).border(2.dp, Color.MainGreen, RoundedCornerShape(100.dp)),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.surface,
+                                contentColor = Color.MainGreen
+                            )
                         ) {
-                            Text(text = stringResource(R.string.minuman))
+                            Text(text = stringResource(R.string.minuman), fontWeight = FontWeight.Bold)
                         }
                         Button(
                             onClick = {filtered = "Semua"},
-                            modifier = Modifier.padding(8.dp)
+                            modifier = Modifier.padding(8.dp).border(2.dp, Color.MainGreen, RoundedCornerShape(100.dp)),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.surface,
+                                contentColor = Color.MainGreen
+                            )
                         ) {
-                            Text(text = stringResource(R.string.semua))
+                            Text(text = stringResource(R.string.semua), fontWeight = FontWeight.Bold)
                         }
                     }
                 }
-                if (filtered == "Makanan"){
-                    items(dataMakanan){
-                        ListItem(menu = it){
-                            navController.navigate(Screen.FormUbah.withId(it.id))
+                when (filtered) {
+                    "Makanan" -> {
+                        items(dataMakanan) {
+                            ListItem(menu = it) {
+                                navController.navigate(Screen.DetailMenu.withId(it.id))
+                            }
+                            HorizontalDivider()
                         }
-                        HorizontalDivider()
                     }
-                }else if (filtered == "Minuman"){
-                    items(dataMinuman){
-                        ListItem(menu = it){
-                            navController.navigate(Screen.FormUbah.withId(it.id))
+                    "Minuman" -> {
+                        items(dataMinuman) {
+                            ListItem(menu = it) {
+                                navController.navigate(Screen.DetailMenu.withId(it.id))
+                            }
+                            HorizontalDivider()
                         }
-                        HorizontalDivider()
                     }
-                }else{
-                    items(data){
-                        ListItem(menu = it){
-                            navController.navigate(Screen.FormUbah.withId(it.id))
+                    else -> {
+                        item {
+                            Text(
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 23.dp),
+                                text = stringResource(R.string.minuman),
+                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.headlineSmall
+                            )
                         }
-                        HorizontalDivider()
+                        items(dataMinuman) {
+                            ListItem(menu = it) {
+                                navController.navigate(Screen.DetailMenu.withId(it.id))
+                            }
+                            HorizontalDivider()
+                        }
+                        item {
+                            Text(
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 23.dp),
+                                text = stringResource(R.string.makanan),
+                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.headlineSmall
+                            )
+                        }
+                        items(dataMakanan) {
+                            ListItem(menu = it) {
+                                navController.navigate(Screen.DetailMenu.withId(it.id))
+                            }
+                            HorizontalDivider()
+                        }
                     }
                 }
             }
@@ -231,10 +270,10 @@ fun ScreenContent(showList: Boolean,modifier: Modifier = Modifier, navController
                     ) {
                         Button(
                             onClick = {filtered = "Semua"},
-                            modifier = Modifier.padding(8.dp),
+                            modifier = Modifier.padding(8.dp).border(2.dp, Color.MainGreen, RoundedCornerShape(100.dp)),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.surface
+                                containerColor = MaterialTheme.colorScheme.surface,
+                                contentColor = Color.MainGreen
                             )
                         ) {
                             Icon(
@@ -244,40 +283,56 @@ fun ScreenContent(showList: Boolean,modifier: Modifier = Modifier, navController
                         }
                         Button(
                             onClick = {filtered = "Makanan"},
-                            modifier = Modifier.padding(8.dp),
+                            modifier = Modifier.padding(8.dp).border(2.dp, Color.MainGreen, RoundedCornerShape(100.dp)),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.surface,
+                                contentColor = Color.MainGreen
+                            )
                         ) {
-                            Text(text = stringResource(R.string.makanan))
+                            Text(text = stringResource(R.string.makanan), fontWeight = FontWeight.Bold)
                         }
                         Button(
                             onClick = {filtered = "Minuman"},
-                            modifier = Modifier.padding(8.dp)
+                            modifier = Modifier.padding(8.dp).border(2.dp, Color.MainGreen, RoundedCornerShape(100.dp)),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.surface,
+                                contentColor = Color.MainGreen
+                            )
                         ) {
-                            Text(text = stringResource(R.string.minuman))
+                            Text(text = stringResource(R.string.minuman), fontWeight = FontWeight.Bold)
                         }
                         Button(
                             onClick = {filtered = "Semua"},
-                            modifier = Modifier.padding(8.dp)
+                            modifier = Modifier.padding(8.dp).border(2.dp, Color.MainGreen, RoundedCornerShape(100.dp)),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.surface,
+                                contentColor = Color.MainGreen
+                            )
                         ) {
-                            Text(text = stringResource(R.string.semua))
+                            Text(text = stringResource(R.string.semua), fontWeight = FontWeight.Bold)
                         }
                     }
                 }
-                if (filtered == "Makanan"){
-                    items(dataMakanan){
-                        GridItem(menu = it){
-                            navController.navigate(Screen.FormUbah.withId(it.id))
+                when (filtered) {
+                    "Makanan" -> {
+                        items(dataMakanan) {
+                            GridItem(menu = it) {
+                                navController.navigate(Screen.DetailMenu.withId(it.id))
+                            }
                         }
                     }
-                }else if (filtered == "Minuman"){
-                    items(dataMinuman){
-                        GridItem(menu = it){
-                            navController.navigate(Screen.FormUbah.withId(it.id))
+                    "Minuman" -> {
+                        items(dataMinuman) {
+                            GridItem(menu = it) {
+                                navController.navigate(Screen.DetailMenu.withId(it.id))
+                            }
                         }
                     }
-                }else{
-                    items(data){
-                        GridItem(menu = it){
-                            navController.navigate(Screen.FormUbah.withId(it.id))
+                    else -> {
+                        items(data) {
+                            GridItem(menu = it) {
+                                navController.navigate(Screen.DetailMenu.withId(it.id))
+                            }
                         }
                     }
                 }
@@ -312,9 +367,10 @@ fun ListItem(menu: Menu, onClick: () -> Unit){
                 )
                 Text(
                     text = menu.deskripsi,
-                    overflow = TextOverflow.Ellipsis,
                     color = MaterialTheme.colorScheme.secondary,
-                    maxLines = 2
+                    modifier = Modifier.width(250.dp),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                 )
                 Text(
                     text = "Rp " + menu.harga.toString(),
@@ -324,16 +380,32 @@ fun ListItem(menu: Menu, onClick: () -> Unit){
                 )
             }
             Box(
-                modifier = Modifier
-                    .size(100.dp)
-                    .clip(RoundedCornerShape(8.dp))
+                modifier = Modifier.size(100.dp)
             ){
                 Image(
                     painter = painterResource(menu.gambar),
                     contentDescription = menu.nama,
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(8.dp))
                 )
+                Button(
+                    onClick = {},
+                    modifier = Modifier
+                        .height(40.dp)
+                        .align(Alignment.BottomCenter)
+                        .offset(y = 20.dp)
+                        .border(3.dp, Color.MainGreen, RoundedCornerShape(100.dp)).fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        MaterialTheme.colorScheme.surface,
+                        Color.MainGreen
+                    )
+                ) {
+                    Text(
+                        text = stringResource(R.string.pesan),
+                    )
+                }
             }
         }
 
@@ -345,13 +417,12 @@ fun GridItem(menu: Menu, onClick: () -> Unit){
     Card(
         modifier = Modifier.fillMaxWidth().clickable{onClick()},
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
+            containerColor = MaterialTheme.colorScheme.background,
         ),
-        border = BorderStroke(1.dp, DividerDefaults.color)
     ) {
         Column(
             modifier = Modifier.padding(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Box(
                 modifier = Modifier
@@ -379,6 +450,20 @@ fun GridItem(menu: Menu, onClick: () -> Unit){
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
+            Button(
+                onClick = {},
+                modifier = Modifier
+                    .height(40.dp)
+                    .border(3.dp, Color.MainGreen, RoundedCornerShape(100.dp)).fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    MaterialTheme.colorScheme.surface,
+                    Color.MainGreen
+                )
+            ) {
+                Text(
+                    text = stringResource(R.string.pesan),
+                )
+            }
         }
     }
 }

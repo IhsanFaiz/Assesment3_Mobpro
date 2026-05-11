@@ -23,7 +23,7 @@ fun SetupNavGraph(navController: NavHostController = rememberNavController()){
 //            DetailScreen(navController)
         }
         composable(
-            route = Screen.FormUbah.route,
+            route = Screen.DetailMenu.route,
             arguments = listOf(
                 navArgument(KEY_ID_CATATAN) { type = NavType.LongType }
             )

@@ -57,44 +57,86 @@ abstract class CafeDb : RoomDatabase() {
                                                     Menu(
                                                         nama = "Americano",
                                                         harga = 18000,
-                                                        deskripsi = "Strong coffee",
+                                                        deskripsi = "Espresso dengan tambahan air panas.",
                                                         kategori = "Minuman",
                                                         gambar = R.drawable.americano
                                                     ),
                                                     Menu(
                                                         nama = "Cappuccino",
                                                         harga = 18000,
-                                                        deskripsi = "Strong coffee",
+                                                        deskripsi = "Perpaduan espresso, susu, dan foam lembut.",
                                                         kategori = "Minuman",
                                                         gambar = R.drawable.cappucino
                                                     ),
                                                     Menu(
                                                         nama = "Latte",
                                                         harga = 25000,
-                                                        deskripsi = "Milk coffee",
+                                                        deskripsi = "Kopi susu creamy dengan rasa smooth.",
                                                         kategori = "Minuman",
                                                         gambar = R.drawable.latte
                                                     ),
                                                     Menu(
                                                         nama = "Vanilla Latte",
                                                         harga = 25000,
-                                                        deskripsi = "Milk coffee",
+                                                        deskripsi = "Kopi susu creamy dengan syrup vanilla.",
                                                         kategori = "Minuman",
                                                         gambar = R.drawable.vanilla_latte
                                                     ),
                                                     Menu(
                                                         nama = "Caramel Latte",
                                                         harga = 25000,
-                                                        deskripsi = "Milk coffee",
+                                                        deskripsi = "Kopi susu creamy dengan syrup caramel.",
                                                         kategori = "Minuman",
                                                         gambar = R.drawable.caramel_latte
                                                     ),
                                                     Menu(
                                                         nama = "Croissant",
                                                         harga = 22000,
-                                                        deskripsi = "Fresh pastry",
+                                                        deskripsi = "Pastry buttery dengan tekstur renyah.",
                                                         kategori = "Makanan",
                                                         gambar = R.drawable.croissant
+                                                    ),
+                                                    Menu(
+                                                        nama = "Espresso",
+                                                        deskripsi = "Kopi hitam pekat dengan aroma strong.",
+                                                        kategori = "Minuman",
+                                                        harga = 18000,
+                                                        gambar = R.drawable.espresso
+                                                    ),
+                                                    Menu(
+                                                        nama = "Mocha",
+                                                        deskripsi = "Kopi dengan campuran coklat premium.",
+                                                        kategori = "Minuman",
+                                                        harga = 30000,
+                                                        gambar = R.drawable.mocha
+                                                    ),
+                                                    Menu(
+                                                        nama = "Cheesecake",
+                                                        deskripsi = "Cake lembut dengan topping cream cheese.",
+                                                        kategori = "Makanan",
+                                                        harga = 35000,
+                                                        gambar = R.drawable.cheesecake
+                                                    ),
+                                                    Menu(
+                                                        nama = "French Fries",
+                                                        deskripsi = "Kentang goreng crispy dengan saus spesial.",
+                                                        kategori = "Makanan",
+                                                        harga = 24000,
+                                                        gambar = R.drawable.french_fries
+                                                    ),
+                                                    Menu(
+                                                        nama = "Club Sandwich",
+                                                        deskripsi = "Sandwich isi ayam, sayur, dan keju.",
+                                                        kategori = "Makanan",
+                                                        harga = 32000,
+                                                        gambar = R.drawable.club_sandwich
+                                                    ),
+                                                    Menu(
+                                                        nama = "Donut",
+                                                        deskripsi = "Donat empuk dengan topping manis.",
+                                                        kategori = "Makanan",
+                                                        harga = 18000,
+                                                        gambar = R.drawable.donut
                                                     )
                                                 )
                                             )
