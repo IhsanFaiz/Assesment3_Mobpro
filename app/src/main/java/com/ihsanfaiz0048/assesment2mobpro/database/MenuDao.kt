@@ -21,6 +21,12 @@ interface MenuDao {
     @Query("SELECT * FROM menu ORDER BY nama ASC")
     fun getMenu(): Flow<List<Menu>>
 
+    @Query("SELECT * FROM menu WHERE kategori = 'Makanan' ORDER BY nama ASC")
+    fun getMenuMakanan(): Flow<List<Menu>>
+
+    @Query("SELECT * FROM menu WHERE kategori = 'Minuman' ORDER BY nama ASC")
+    fun getMenuMinuman(): Flow<List<Menu>>
+
     @Query("SELECT * FROM menu WHERE id = :id")
     suspend fun getMenuById(id: Long): Menu?
 

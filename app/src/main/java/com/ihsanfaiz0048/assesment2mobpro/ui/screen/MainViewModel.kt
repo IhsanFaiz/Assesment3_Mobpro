@@ -14,4 +14,14 @@ class MainViewModel(dao: MenuDao) : ViewModel() {
         started = SharingStarted.WhileSubscribed(),
         initialValue = emptyList()
     )
+    val dataMakanan: StateFlow<List<Menu>> = dao.getMenuMakanan().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(),
+        initialValue = emptyList()
+    )
+    val dataMinuman: StateFlow<List<Menu>> = dao.getMenuMinuman().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(),
+        initialValue = emptyList()
+    )
 }

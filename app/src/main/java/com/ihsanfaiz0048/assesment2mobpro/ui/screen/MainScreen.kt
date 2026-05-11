@@ -2,20 +2,38 @@ package com.ihsanfaiz0048.assesment2mobpro.ui.screen
 
 import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.SettingsInputComponent
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DividerDefaults
@@ -32,8 +50,14 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -88,21 +112,15 @@ fun MainScreen(navController: NavHostController){
                             tint = MaterialTheme.colorScheme.primary
                         )
                     }
+                    IconButton(onClick = {}) {
+                        Icon(
+                            imageVector = Icons.Outlined.History,
+                            contentDescription = stringResource(R.string.history),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    navController.navigate(Screen.FormBaru.route)
-                }
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = stringResource(R.string.tambah_catatan),
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
         }
     ) { innerPadding ->
         ScreenContent(showList, Modifier.padding(innerPadding), navController)
@@ -115,6 +133,10 @@ fun ScreenContent(showList: Boolean,modifier: Modifier = Modifier, navController
     val factory = ViewModelFactory(context)
     val viewModel: MainViewModel = viewModel(factory = factory)
     val data by viewModel.data.collectAsState()
+    val dataMakanan by viewModel.dataMakanan.collectAsState()
+    val dataMinuman by viewModel.dataMinuman.collectAsState()
+    var filtered by remember { mutableStateOf("Semua") }
+
     if (data.isEmpty()){
         Column(
             modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -131,11 +153,65 @@ fun ScreenContent(showList: Boolean,modifier: Modifier = Modifier, navController
                 modifier = modifier.fillMaxSize(),
                 contentPadding = PaddingValues(bottom = 84.dp)
             ) {
-                items(data){
-                    ListItem(menu = it){
-                        navController.navigate(Screen.FormUbah.withId(it.id))
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Button(
+                            onClick = {filtered = "Semua"},
+                            modifier = Modifier.padding(8.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.surface
+                            )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.SettingsInputComponent,
+                                contentDescription = ""
+                            )
+                        }
+                        Button(
+                            onClick = {filtered = "Makanan"},
+                            modifier = Modifier.padding(8.dp),
+                        ) {
+                            Text(text = stringResource(R.string.makanan))
+                        }
+                        Button(
+                            onClick = {filtered = "Minuman"},
+                            modifier = Modifier.padding(8.dp)
+                        ) {
+                            Text(text = stringResource(R.string.minuman))
+                        }
+                        Button(
+                            onClick = {filtered = "Semua"},
+                            modifier = Modifier.padding(8.dp)
+                        ) {
+                            Text(text = stringResource(R.string.semua))
+                        }
                     }
-                    HorizontalDivider()
+                }
+                if (filtered == "Makanan"){
+                    items(dataMakanan){
+                        ListItem(menu = it){
+                            navController.navigate(Screen.FormUbah.withId(it.id))
+                        }
+                        HorizontalDivider()
+                    }
+                }else if (filtered == "Minuman"){
+                    items(dataMinuman){
+                        ListItem(menu = it){
+                            navController.navigate(Screen.FormUbah.withId(it.id))
+                        }
+                        HorizontalDivider()
+                    }
+                }else{
+                    items(data){
+                        ListItem(menu = it){
+                            navController.navigate(Screen.FormUbah.withId(it.id))
+                        }
+                        HorizontalDivider()
+                    }
                 }
             }
         }else{
@@ -146,9 +222,63 @@ fun ScreenContent(showList: Boolean,modifier: Modifier = Modifier, navController
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 contentPadding = PaddingValues(8.dp, 8.dp, 8.dp, 84.dp)
             ) {
-                items(data){
-                    GridItem(menu = it){
-                        navController.navigate(Screen.FormUbah.withId(it.id))
+                item(
+                    span = StaggeredGridItemSpan.FullLine
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Button(
+                            onClick = {filtered = "Semua"},
+                            modifier = Modifier.padding(8.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.surface
+                            )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.SettingsInputComponent,
+                                contentDescription = ""
+                            )
+                        }
+                        Button(
+                            onClick = {filtered = "Makanan"},
+                            modifier = Modifier.padding(8.dp),
+                        ) {
+                            Text(text = stringResource(R.string.makanan))
+                        }
+                        Button(
+                            onClick = {filtered = "Minuman"},
+                            modifier = Modifier.padding(8.dp)
+                        ) {
+                            Text(text = stringResource(R.string.minuman))
+                        }
+                        Button(
+                            onClick = {filtered = "Semua"},
+                            modifier = Modifier.padding(8.dp)
+                        ) {
+                            Text(text = stringResource(R.string.semua))
+                        }
+                    }
+                }
+                if (filtered == "Makanan"){
+                    items(dataMakanan){
+                        GridItem(menu = it){
+                            navController.navigate(Screen.FormUbah.withId(it.id))
+                        }
+                    }
+                }else if (filtered == "Minuman"){
+                    items(dataMinuman){
+                        GridItem(menu = it){
+                            navController.navigate(Screen.FormUbah.withId(it.id))
+                        }
+                    }
+                }else{
+                    items(data){
+                        GridItem(menu = it){
+                            navController.navigate(Screen.FormUbah.withId(it.id))
+                        }
                     }
                 }
             }
@@ -165,22 +295,48 @@ fun ListItem(menu: Menu, onClick: () -> Unit){
             .clickable{onClick()},
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ){
-        Text(
-            text = menu.nama,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            fontWeight = FontWeight.Bold
-        )
-        Text(
-            text = menu.deskripsi,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis
-        )
-        Text(
-            text = "Rp " + menu.harga.toString(),
-            overflow = TextOverflow.Ellipsis,
-            fontWeight = FontWeight.Bold
-        )
+        Row (
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ){
+            Column (
+                modifier = Modifier.fillMaxHeight(),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ){
+                Text(
+                    text = menu.nama,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Text(
+                    text = menu.deskripsi,
+                    overflow = TextOverflow.Ellipsis,
+                    color = MaterialTheme.colorScheme.secondary,
+                    maxLines = 2
+                )
+                Text(
+                    text = "Rp " + menu.harga.toString(),
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .size(100.dp)
+                    .clip(RoundedCornerShape(8.dp))
+            ){
+                Image(
+                    painter = painterResource(menu.gambar),
+                    contentDescription = menu.nama,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+        }
+
     }
 }
 
@@ -197,21 +353,31 @@ fun GridItem(menu: Menu, onClick: () -> Unit){
             modifier = Modifier.padding(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            Box(
+                modifier = Modifier
+                    .height(100.dp)
+                    .width(200.dp)
+                    .clip(RoundedCornerShape(8.dp))
+            ){
+                Image(
+                    painter = painterResource(menu.gambar),
+                    contentDescription = menu.nama,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
             Text(
                 text = menu.nama,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = menu.deskripsi,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.titleMedium
             )
             Text(
                 text = "Rp " + menu.harga.toString(),
-                fontWeight = FontWeight.Bold,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
             )
         }
     }
