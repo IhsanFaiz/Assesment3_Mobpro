@@ -27,6 +27,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Coffee
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.SettingsInputComponent
 import androidx.compose.material3.Button
@@ -74,6 +75,9 @@ import com.ihsanfaiz0048.assesment2mobpro.util.ViewModelFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -85,11 +89,22 @@ fun MainScreen(navController: NavHostController){
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        text = stringResource(id = R.string.app_name),
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.headlineSmall
-                    )
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Coffee,
+                            contentDescription = "",
+                            tint = Color.TextGreen,
+                            modifier = Modifier.size(30.dp)
+                        )
+                        Text(
+                            text = stringResource(id = R.string.app_name),
+                            fontWeight = FontWeight.ExtraBold,
+                            style = MaterialTheme.typography.headlineSmall
+                        )
+                    }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.MainGreen,
@@ -373,7 +388,7 @@ fun ListItem(menu: Menu, onClick: () -> Unit){
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    text = "Rp " + menu.harga.toString(),
+                    text = "Rp " + formatHarga(menu.harga),
                     overflow = TextOverflow.Ellipsis,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
@@ -391,7 +406,7 @@ fun ListItem(menu: Menu, onClick: () -> Unit){
                         .clip(RoundedCornerShape(8.dp))
                 )
                 Button(
-                    onClick = {},
+                    onClick = {onClick()},
                     modifier = Modifier
                         .height(40.dp)
                         .align(Alignment.BottomCenter)
@@ -445,13 +460,13 @@ fun GridItem(menu: Menu, onClick: () -> Unit){
                 style = MaterialTheme.typography.titleMedium
             )
             Text(
-                text = "Rp " + menu.harga.toString(),
+                text = "Rp " + formatHarga(menu.harga),
                 overflow = TextOverflow.Ellipsis,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
             Button(
-                onClick = {},
+                onClick = {onClick()},
                 modifier = Modifier
                     .height(40.dp)
                     .border(3.dp, Color.MainGreen, RoundedCornerShape(100.dp)).fillMaxWidth(),

@@ -1,19 +1,12 @@
 <resources>
     <string name="app_name">Brewly</string>
-    <string name="judul">Judul</string>
     <string name="kembali">Kembali</string>
     <string name="simpan">Simpan</string>
-    <string name="pesan_hapus">Hapus catatan ini?</string>
     <string name="tombol_hapus">Hapus</string>
     <string name="tombol_batal">Batal</string>
-    <string name="hapus">Hapus catatan</string>
     <string name="lainnya">Opsi lainnya</string>
-    <string name="invalid">Judul dan isi catatan tidak boleh kosong</string>
-    <string name="edit_catatan">Ubah catatan</string>
-    <string name="isi_catatan">Isi Catatan</string>
     <string name="list_kosong">Belum ada Menu</string>
     <string name="x_diklik">%1$s diklik!</string>
-    <string name="tambah_catatan">Tambah catatan.</string>
     <string name="list">Tampilan list</string>
     <string name="grid">Tampilan grid</string>
     <string name="history">History</string>
@@ -21,4 +14,11 @@
     <string name="minuman">Minuman</string>
     <string name="semua">Semua</string>
     <string name="pesan">Pesan</string>
+    <string name="harga">Harga</string>
+    <string name="catatan">Catatan</string>
+    <string name="opsional">Opsional</string>
+    <string name="contoh_catatan">Contoh: banyakin porsinya, ya</string>
+    <string name="total_bayar">Total Pembayaran</string>
+    <string name="biaya_penanganan">Biaya Penanganan</string>
+    <string name="ringkasan_pembayaran">Ringkasan Pembayaran</string>
 </resources>
