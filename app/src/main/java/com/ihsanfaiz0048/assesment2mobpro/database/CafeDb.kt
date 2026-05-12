@@ -7,18 +7,23 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.ihsanfaiz0048.assesment2mobpro.R
 import com.ihsanfaiz0048.assesment2mobpro.model.Menu
+import com.ihsanfaiz0048.assesment2mobpro.model.Order
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Database(
-    entities = [Menu::class],
+    entities = [
+        Menu::class,
+        Order::class
+   ],
     version = 1,
     exportSchema = false
 )
 abstract class CafeDb : RoomDatabase() {
 
-    abstract val dao: MenuDao
+    abstract val menuDao: MenuDao
+    abstract val orderDao: OrderDao
 
     companion object {
 
@@ -52,7 +57,7 @@ abstract class CafeDb : RoomDatabase() {
                                             Dispatchers.IO
                                         ).launch {
 
-                                            database.dao.insertAll(
+                                            database.menuDao.insertAll(
                                                 listOf(
                                                     Menu(
                                                         nama = "Americano",

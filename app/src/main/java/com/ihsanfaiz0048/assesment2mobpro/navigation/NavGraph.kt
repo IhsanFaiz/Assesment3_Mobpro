@@ -29,7 +29,7 @@ fun SetupNavGraph(navController: NavHostController = rememberNavController()){
                 navArgument(KEY_ID_CATATAN) { type = NavType.LongType }
             )
         ) { navBackStackEntry ->
-            val id = navBackStackEntry.arguments?.getLong(KEY_ID_CATATAN)
+            val id = navBackStackEntry.arguments?.getLong(KEY_ID_CATATAN) ?: 0L
             DetailScreen(navController, id)
         }
     }

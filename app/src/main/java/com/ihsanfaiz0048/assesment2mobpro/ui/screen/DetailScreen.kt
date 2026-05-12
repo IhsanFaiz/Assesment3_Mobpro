@@ -37,6 +37,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -63,22 +64,23 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DetailScreen(navController: NavHostController, id: Long? = null){
+fun DetailScreen(navController: NavHostController, id: Long){
     val context = LocalContext.current
     val factory = ViewModelFactory(context)
     val viewModel: DetailViewModel = viewModel(factory = factory)
 
+    var id by remember { mutableLongStateOf(id) }
     var nama by remember{ mutableStateOf("") }
     var deskripsi by remember { mutableStateOf("") }
     var harga by remember { mutableIntStateOf(0) }
     var gambar by remember { mutableIntStateOf(R.drawable.baseline_coffee_24) }
     var showDialog by remember { mutableStateOf(false) }
-    var catatan by remember { mutableStateOf("") }
 
 
     LaunchedEffect(Unit) {
-        if (id == null) return@LaunchedEffect
         val data = viewModel.getMenu(id) ?: return@LaunchedEffect
+
+        id = data.id
         nama = data.nama
         deskripsi = data.deskripsi
         harga = data.harga
@@ -114,15 +116,25 @@ fun DetailScreen(navController: NavHostController, id: Long? = null){
         }
     ) { padding ->
         OrderMenu(
+            id = id,
             nama = nama,
             deskripsi = deskripsi,
             hargaAsli = harga,
             harga = formatHarga(harga),
             gambar = gambar,
-            catatan = catatan,
-            onCatatanChange = {catatan = it},
+            onShowDialog = {
+                showDialog = true
+            },
             modifier = Modifier.padding(padding)
         )
+        if (showDialog){
+            DisplaySuccessDialog(
+                onConfirmation = {
+                    showDialog = false
+                    navController.popBackStack()
+                }
+            )
+        }
     }
 }
 
@@ -155,15 +167,24 @@ fun DetailScreen(navController: NavHostController, id: Long? = null){
 
 @Composable
 fun OrderMenu(
+    id: Long,
     nama: String,
     deskripsi: String,
     hargaAsli: Int,
     harga: String,
     gambar: Int,
-    catatan: String,
-    onCatatanChange: (String) -> Unit,
+    onShowDialog: () -> Unit,
     modifier: Modifier = Modifier
 ){
+    val context = LocalContext.current
+    val factory = ViewModelFactory(context)
+    val viewModel: DetailViewModel = viewModel(factory = factory)
+
+    var idMenu by remember { mutableLongStateOf(id) }
+    var catatan by remember { mutableStateOf("") }
+    var quantity by remember { mutableIntStateOf(0) }
+    var totalBayar by remember { mutableIntStateOf(0) }
+
     val grayColor = if (isSystemInDarkTheme()) Color.DarkGray else Color.LightGray
     Column(
         verticalArrangement = Arrangement.SpaceBetween,
@@ -354,7 +375,7 @@ fun OrderMenu(
                 )
                 OutlinedTextField(
                     value = catatan,
-                    onValueChange = {onCatatanChange(it)},
+                    onValueChange = {catatan = it},
                     placeholder = { Text(text = stringResource(R.string.contoh_catatan)) },
                     shape = RoundedCornerShape(100.dp),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -372,7 +393,15 @@ fun OrderMenu(
             }
         }
         Button(
-            onClick = {},
+            onClick = {
+                viewModel.insertOrder(
+                    idMenu,
+                    catatan,
+                    quantity,
+                    totalBayar
+                )
+                onShowDialog()
+            },
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.MainGreen,
                 contentColor = MaterialTheme.colorScheme.surface

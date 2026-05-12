@@ -12,11 +12,12 @@ class ViewModelFactory(
 ) : ViewModelProvider.Factory {
     @Suppress("unchecked_cast")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        val dao = CafeDb.getInstance(context).dao
+        val daoMenu = CafeDb.getInstance(context).menuDao
+        val daoOrder = CafeDb.getInstance(context).orderDao
         if (modelClass.isAssignableFrom(MainViewModel::class.java)) {
-            return MainViewModel(dao) as T
+            return MainViewModel(daoMenu) as T
         } else if (modelClass.isAssignableFrom(DetailViewModel::class.java)){
-            return DetailViewModel(dao) as T
+            return DetailViewModel(daoMenu, daoOrder) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

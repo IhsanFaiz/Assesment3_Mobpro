@@ -3,6 +3,8 @@
     <string name="kembali">Kembali</string>
     <string name="simpan">Simpan</string>
     <string name="tombol_hapus">Hapus</string>
+    <string name="ok">Ok</string>
+    <string name="pesanan_diterima">Pesanan Diterima</string>
     <string name="tombol_batal">Batal</string>
     <string name="lainnya">Opsi lainnya</string>
     <string name="list_kosong">Belum ada Menu</string>
