@@ -75,9 +75,6 @@ import com.ihsanfaiz0048.assesment2mobpro.util.ViewModelFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.text.DecimalFormat
-import java.text.DecimalFormatSymbols
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -128,7 +125,9 @@ fun MainScreen(navController: NavHostController){
                             tint = Color.TextGreen
                         )
                     }
-                    IconButton(onClick = {}) {
+                    IconButton(onClick = {
+                        navController.navigate(Screen.HistoryScreen.route)
+                    }) {
                         Icon(
                             imageVector = Icons.Outlined.History,
                             contentDescription = stringResource(R.string.history),

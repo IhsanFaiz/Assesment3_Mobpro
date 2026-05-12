@@ -15,7 +15,7 @@ interface OrderDao {
     @Update
     suspend fun update(order: Order)
 
-    @Query("SELECT * FROM orders o JOIN menu m on m.id = o.idMenu")
+    @Query("SELECT * FROM orders o JOIN menu m on m.id = o.idMenu ORDER BY o.tanggal DESC")
     fun getOrderWithMenu(): Flow<List<Order>>
 
     @Query("DELETE FROM orders WHERE id = :id")

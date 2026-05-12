@@ -109,9 +109,6 @@ fun DetailScreen(navController: NavHostController, id: Long){
                     containerColor = Color.MainGreen,
                     titleContentColor = Color.TextGreen,
                 ),
-                actions = {
-
-                }
             )
         }
     ) { padding ->
