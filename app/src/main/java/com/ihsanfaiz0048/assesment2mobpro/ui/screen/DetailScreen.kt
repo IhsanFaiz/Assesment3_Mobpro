@@ -309,7 +309,7 @@ fun OrderMenu(
             ) {
                 val totalHarga = hargaAsli * quantity
                 val biayaPenaganan = 3000 * quantity
-                val totalBayar = totalHarga + biayaPenaganan
+                totalBayar = totalHarga + biayaPenaganan
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.fillMaxWidth()
