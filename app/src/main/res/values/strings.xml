@@ -2,8 +2,10 @@
     <string name="app_name">Brewly</string>
     <string name="kembali">Kembali</string>
     <string name="simpan">Simpan</string>
-    <string name="tombol_hapus">Hapus</string>
+    <string name="hapus_history">Hapus History</string>
     <string name="ok">Ok</string>
+    <string name="pesan_hapus">Hapus History?</string>
+    <string name="tombol_hapus">Hapus</string>
     <string name="pesanan_diterima">Pesanan Diterima</string>
     <string name="tombol_batal">Batal</string>
     <string name="detail">Detail Pesanan</string>
