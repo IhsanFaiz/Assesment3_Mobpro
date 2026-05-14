@@ -44,12 +44,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.ihsanfaiz0048.assesment2mobpro.R
 import com.ihsanfaiz0048.assesment2mobpro.model.OrderWithMenu
+import com.ihsanfaiz0048.assesment2mobpro.navigation.Screen
 import com.ihsanfaiz0048.assesment2mobpro.ui.theme.MainGreen
 import com.ihsanfaiz0048.assesment2mobpro.ui.theme.TextGreen
 import com.ihsanfaiz0048.assesment2mobpro.util.ViewModelFactory
@@ -83,12 +85,12 @@ fun HistoryScreen(navController: NavHostController){
             )
         }
     ) { innerPadding ->
-        HistoryContent(Modifier.padding(innerPadding))
+        HistoryContent(Modifier.padding(innerPadding), navController)
     }
 }
 
 @Composable
-fun HistoryContent(modifier: Modifier = Modifier){
+fun HistoryContent(modifier: Modifier = Modifier, navController: NavHostController){
     val context = LocalContext.current
     val factory = ViewModelFactory(context)
     val viewModel: HistoryViewModel = viewModel(factory = factory)
@@ -111,7 +113,7 @@ fun HistoryContent(modifier: Modifier = Modifier){
         ){
             items(data){
                 ListItemHistory(orderWithMenu = it){
-
+                    navController.navigate(Screen.HistoryDetail.withId(it.order.id))
                 }
                 HorizontalDivider(thickness = 1.dp)
             }
@@ -183,6 +185,7 @@ fun ListItemHistory(orderWithMenu: OrderWithMenu, onClick: () -> Unit){
                 ) {
                     Text(
                         text = stringResource(R.string.detail),
+                        textAlign = TextAlign.Center
                     )
                 }
             }

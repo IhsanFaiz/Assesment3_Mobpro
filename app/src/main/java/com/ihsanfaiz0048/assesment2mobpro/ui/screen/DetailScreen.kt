@@ -179,7 +179,7 @@ fun OrderMenu(
 
     var idMenu by remember { mutableLongStateOf(id) }
     var catatan by remember { mutableStateOf("") }
-    var quantity by remember { mutableIntStateOf(0) }
+    var quantity by remember { mutableIntStateOf(1) }
     var totalBayar by remember { mutableIntStateOf(0) }
 
     val grayColor = if (isSystemInDarkTheme()) Color.DarkGray else Color.LightGray
@@ -192,7 +192,6 @@ fun OrderMenu(
         Column(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ){
-            var quantity by remember { mutableIntStateOf(1) }
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier

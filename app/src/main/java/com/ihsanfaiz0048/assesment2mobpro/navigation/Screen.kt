@@ -6,6 +6,9 @@ const val KEY_ID_MENU = "idMenu"
 sealed class Screen(val route: String) {
     data object Home: Screen("mainScreen")
     data object HistoryScreen: Screen("historyScreen")
+    data object HistoryDetail: Screen("historyDetail/{$KEY_ID_MENU}") {
+        fun withId(id: Long) = "historyDetail/$id"
+    }
     data object DetailMenu: Screen("detailScreen/{$KEY_ID_MENU}") {
         fun withId(id: Long) = "detailScreen/$id"
     }

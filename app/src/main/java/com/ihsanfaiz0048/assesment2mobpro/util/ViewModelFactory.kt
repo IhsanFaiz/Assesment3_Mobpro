@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.ihsanfaiz0048.assesment2mobpro.database.CafeDb
 import com.ihsanfaiz0048.assesment2mobpro.ui.screen.DetailViewModel
+import com.ihsanfaiz0048.assesment2mobpro.ui.screen.HistoryDetailViewModel
 import com.ihsanfaiz0048.assesment2mobpro.ui.screen.HistoryViewModel
 import com.ihsanfaiz0048.assesment2mobpro.ui.screen.MainViewModel
 
@@ -21,6 +22,8 @@ class ViewModelFactory(
             return DetailViewModel(daoMenu, daoOrder) as T
         } else if (modelClass.isAssignableFrom(HistoryViewModel::class.java)){
             return HistoryViewModel(daoOrder) as T
+        } else if (modelClass.isAssignableFrom(HistoryDetailViewModel::class.java)){
+            return HistoryDetailViewModel(daoOrder) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

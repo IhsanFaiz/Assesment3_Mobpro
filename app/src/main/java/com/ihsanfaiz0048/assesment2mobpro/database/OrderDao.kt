@@ -19,6 +19,9 @@ interface OrderDao {
     @Query("SELECT o.*, m.id AS 'menu_id', m.nama AS 'menu_nama', m.kategori AS 'menu_kategori', m.deskripsi AS 'menu_deskripsi', m.harga AS 'menu_harga', m.gambar AS 'menu_gambar' FROM orders o JOIN menu m on m.id = o.idMenu ORDER BY o.tanggal DESC")
     fun getOrderWithMenu(): Flow<List<OrderWithMenu>>
 
+    @Query("SELECT o.*, m.id AS 'menu_id', m.nama AS 'menu_nama', m.kategori AS 'menu_kategori', m.deskripsi AS 'menu_deskripsi', m.harga AS 'menu_harga', m.gambar AS 'menu_gambar' FROM orders o JOIN menu m on m.id = o.idMenu WHERE o.id = :id")
+    fun getDetailOrderWithMenu(id: Long): OrderWithMenu
+
     @Query("DELETE FROM orders WHERE id = :id")
     suspend fun deleteById(id: Long)
 }
