@@ -7,6 +7,7 @@
     <string name="pesan_hapus">Hapus History?</string>
     <string name="tombol_hapus">Hapus</string>
     <string name="pesanan_diterima">Pesanan Diterima</string>
+    <string name="update_berhasil">Update Berhasil</string>
     <string name="tombol_batal">Batal</string>
     <string name="detail">Detail Pesanan</string>
     <string name="pembelian">Pembelian</string>
@@ -24,6 +25,8 @@
     <string name="semua">Semua</string>
     <string name="pesan">Pesan</string>
     <string name="harga">Harga</string>
+    <string name="edit">Edit</string>
+    <string name="update">Update</string>
     <string name="catatan">Catatan</string>
     <string name="opsional">Opsional</string>
     <string name="contoh_catatan">Contoh: banyakin porsinya, ya</string>

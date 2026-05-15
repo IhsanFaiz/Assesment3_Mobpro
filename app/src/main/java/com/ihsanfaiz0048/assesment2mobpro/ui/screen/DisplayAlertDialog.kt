@@ -79,6 +79,55 @@ fun DisplaySuccessDialog(
 }
 
 @Composable
+fun DisplayUpdateDialog(
+    onConfirmation: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = {
+            onConfirmation()
+        },
+        icon = {
+            Icon(
+                imageVector = Icons.Outlined.CheckCircleOutline,
+                contentDescription = "",
+                tint = Color.MainGreen,
+                modifier = Modifier
+                    .size(100.dp)
+            )
+        },
+        text = {
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ){
+                Text(
+                    text = stringResource(R.string.update_berhasil),
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleLarge
+                )
+            }
+        },
+        confirmButton = {
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                Button(
+                    onClick = {onConfirmation()},
+                    shape = RoundedCornerShape(100.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.MainGreen
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(text = stringResource(R.string.ok))
+                }
+            }
+        }
+    )
+}
+
+@Composable
 fun DisplayAlertDialog(
     onDismissRequest: () -> Unit,
     onConfirmation: () -> Unit

@@ -1,8 +1,10 @@
 package com.ihsanfaiz0048.assesment2mobpro.ui.screen
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,8 +35,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -54,7 +60,10 @@ import com.ihsanfaiz0048.assesment2mobpro.model.OrderWithMenu
 import com.ihsanfaiz0048.assesment2mobpro.navigation.Screen
 import com.ihsanfaiz0048.assesment2mobpro.ui.theme.MainGreen
 import com.ihsanfaiz0048.assesment2mobpro.ui.theme.TextGreen
+import com.ihsanfaiz0048.assesment2mobpro.util.OrderStatus
 import com.ihsanfaiz0048.assesment2mobpro.util.ViewModelFactory
+import com.ihsanfaiz0048.assesment2mobpro.util.getStatus
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -107,14 +116,30 @@ fun HistoryContent(modifier: Modifier = Modifier, navController: NavHostControll
             )
         }
     }else{
+        var currentTime by remember {
+            mutableLongStateOf(
+                System.currentTimeMillis()
+            )
+        }
+
+        LaunchedEffect(Unit) {
+
+            while (true) {
+
+                currentTime =
+                    System.currentTimeMillis()
+
+                delay(1000)
+            }
+        }
         LazyColumn(
             modifier = modifier.fillMaxSize(),
             contentPadding = PaddingValues(bottom = 84.dp)
         ){
             items(data){
-                ListItemHistory(orderWithMenu = it){
+                ListItemHistory(orderWithMenu = it, currentTime = currentTime, navController = navController, onClick = {
                     navController.navigate(Screen.HistoryDetail.withId(it.order.id))
-                }
+                })
                 HorizontalDivider(thickness = 1.dp)
             }
         }
@@ -122,7 +147,26 @@ fun HistoryContent(modifier: Modifier = Modifier, navController: NavHostControll
 }
 
 @Composable
-fun ListItemHistory(orderWithMenu: OrderWithMenu, onClick: () -> Unit){
+fun ListItemHistory(orderWithMenu: OrderWithMenu, onClick: () -> Unit, currentTime: Long, navController: NavHostController){
+    val statusOrder = orderWithMenu.getStatus(
+        currentTime
+    )
+    val grayColor = if (isSystemInDarkTheme()) Color.LightGray else Color.DarkGray
+
+    val statusColor = when (statusOrder) {
+        OrderStatus.PENDING ->
+            Color.Gray
+
+        OrderStatus.PROCESSING ->
+            Color.MainGreen
+
+        OrderStatus.COMPLETED ->
+            Color.Green
+
+        else -> {
+            Color.Red
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -155,38 +199,75 @@ fun ListItemHistory(orderWithMenu: OrderWithMenu, onClick: () -> Unit){
                 )
                 Text(
                     text = "Rp " + formatHarga(orderWithMenu.order.totalBayar),
-                    overflow = TextOverflow.Ellipsis,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
-            }
-            Box(
-                modifier = Modifier.size(100.dp)
-            ){
-                Image(
-                    painter = painterResource(orderWithMenu.menu.gambar),
-                    contentDescription = orderWithMenu.menu.nama,
-                    contentScale = ContentScale.Crop,
+                Text(
+                    text = statusOrder.toString(),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black,
                     modifier = Modifier
-                        .fillMaxSize()
-                        .clip(RoundedCornerShape(8.dp))
+                        .background(statusColor, RoundedCornerShape(100.dp))
+                        .padding(8.dp)
                 )
-                Button(
-                    onClick = {onClick()},
-                    modifier = Modifier
-                        .height(40.dp)
-                        .align(Alignment.BottomCenter)
-                        .offset(y = 20.dp)
-                        .border(3.dp, Color.MainGreen, RoundedCornerShape(100.dp)).fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        MaterialTheme.colorScheme.surface,
-                        Color.MainGreen
+            }
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(32.dp)
+            ){
+                Box(
+                    modifier = Modifier.size(100.dp)
+                ){
+                    Image(
+                        painter = painterResource(orderWithMenu.menu.gambar),
+                        contentDescription = orderWithMenu.menu.nama,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(8.dp))
                     )
-                ) {
-                    Text(
-                        text = stringResource(R.string.detail),
-                        textAlign = TextAlign.Center
-                    )
+                    Button(
+                        onClick = {onClick()},
+                        modifier = Modifier
+                            .height(40.dp)
+                            .align(Alignment.BottomCenter)
+                            .offset(y = 20.dp)
+                            .border(3.dp, Color.MainGreen, RoundedCornerShape(100.dp)).fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            MaterialTheme.colorScheme.surface,
+                            Color.MainGreen
+                        )
+                    ) {
+                        Text(
+                            text = stringResource(R.string.detail),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+                if (statusOrder == OrderStatus.PENDING){
+                    Button(
+                        onClick = {
+                            navController.navigate(Screen.DetailMenu.edit(
+                                orderWithMenu.menu.id,
+                                orderWithMenu.order.id
+                            ))
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            contentColor = grayColor
+                        ),
+                        contentPadding = PaddingValues(0.dp),
+                        modifier = Modifier
+                            .width(100.dp)
+                            .height(40.dp)
+                            .border(1.dp, grayColor, RoundedCornerShape(100.dp))
+                    ) {
+                        Text(
+                            text = stringResource(R.string.edit),
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
         }

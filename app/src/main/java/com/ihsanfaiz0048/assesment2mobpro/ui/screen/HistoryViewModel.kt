@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.ihsanfaiz0048.assesment2mobpro.database.OrderDao
 import com.ihsanfaiz0048.assesment2mobpro.model.Order
 import com.ihsanfaiz0048.assesment2mobpro.model.OrderWithMenu
+import com.ihsanfaiz0048.assesment2mobpro.util.OrderStatus
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn

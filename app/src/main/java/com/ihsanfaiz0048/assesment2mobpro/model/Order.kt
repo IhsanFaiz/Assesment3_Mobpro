@@ -24,5 +24,6 @@ data class Order(
     val catatan: String? = null,
     val quantity: Int,
     val totalBayar: Int,
-    val tanggal: String
+    val tanggal: String,
+    val createdAt: Long = System.currentTimeMillis()
 )

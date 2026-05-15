@@ -37,11 +37,36 @@ fun SetupNavGraph(navController: NavHostController = rememberNavController()){
         composable(
             route = Screen.DetailMenu.route,
             arguments = listOf(
-                navArgument(KEY_ID_MENU) { type = NavType.LongType }
+
+                navArgument(KEY_ID_MENU) {
+                    type = NavType.LongType
+                },
+
+                navArgument(KEY_ID_ORDER) {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                }
             )
         ) { navBackStackEntry ->
-            val id = navBackStackEntry.arguments?.getLong(KEY_ID_MENU) ?: 0L
-            DetailScreen(navController, id)
+
+            val idMenu =
+                navBackStackEntry
+                    .arguments
+                    ?.getLong(KEY_ID_MENU)
+                    ?: 0L
+
+            val idOrder =
+                navBackStackEntry
+                    .arguments
+                    ?.getString(KEY_ID_ORDER)
+                    ?.toLongOrNull()
+
+            DetailScreen(
+                navController,
+                idMenu,
+                idOrder
+            )
         }
     }
 }

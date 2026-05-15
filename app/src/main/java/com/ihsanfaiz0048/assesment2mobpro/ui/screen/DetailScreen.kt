@@ -64,27 +64,43 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DetailScreen(navController: NavHostController, id: Long){
+fun DetailScreen(navController: NavHostController, idMenu: Long, idOrder: Long? = null){
     val context = LocalContext.current
     val factory = ViewModelFactory(context)
     val viewModel: DetailViewModel = viewModel(factory = factory)
 
-    var id by remember { mutableLongStateOf(id) }
+    var idMenu by remember { mutableLongStateOf(idMenu) }
     var nama by remember{ mutableStateOf("") }
     var deskripsi by remember { mutableStateOf("") }
     var harga by remember { mutableIntStateOf(0) }
     var gambar by remember { mutableIntStateOf(R.drawable.baseline_coffee_24) }
-    var showDialog by remember { mutableStateOf(false) }
+    var quantity by remember { mutableIntStateOf(1) }
+    var catatan: String by remember { mutableStateOf("") }
+
+    var showDialogSuccess by remember { mutableStateOf(false) }
+    var showDialogUpdate by remember { mutableStateOf(false) }
 
 
-    LaunchedEffect(Unit) {
-        val data = viewModel.getMenu(id) ?: return@LaunchedEffect
+    LaunchedEffect(idMenu, idOrder) {
+        if (idOrder == null){
+            val data = viewModel.getMenu(idMenu) ?: return@LaunchedEffect
 
-        id = data.id
-        nama = data.nama
-        deskripsi = data.deskripsi
-        harga = data.harga
-        gambar = data.gambar
+            idMenu = data.id
+            nama = data.nama
+            deskripsi = data.deskripsi
+            harga = data.harga
+            gambar = data.gambar
+        }else{
+            val dataOrder = viewModel.getOrderWithMenuEdit(idOrder) ?: return@LaunchedEffect
+
+            idMenu = dataOrder.menu.id
+            nama = dataOrder.menu.nama
+            deskripsi = dataOrder.menu.deskripsi
+            harga = dataOrder.menu.harga
+            gambar = dataOrder.menu.gambar
+            quantity = dataOrder.order.quantity
+            catatan = dataOrder.order.catatan ?: ""
+        }
     }
     Scaffold(
         topBar = {
@@ -113,21 +129,37 @@ fun DetailScreen(navController: NavHostController, id: Long){
         }
     ) { padding ->
         OrderMenu(
-            id = id,
+            idOrder = idOrder,
+            idMenu = idMenu,
             nama = nama,
             deskripsi = deskripsi,
             hargaAsli = harga,
             harga = formatHarga(harga),
             gambar = gambar,
-            onShowDialog = {
-                showDialog = true
+            catatan = catatan,
+            quantity = quantity,
+            onCatatanChange = {catatan = it},
+            onQuantityChange = {quantity = it},
+            onShowDialogSuccess = {
+                showDialogSuccess = true
+            },
+            onShowDialogUpdate = {
+                showDialogUpdate = true
             },
             modifier = Modifier.padding(padding)
         )
-        if (showDialog){
+        if (showDialogSuccess){
             DisplaySuccessDialog(
                 onConfirmation = {
-                    showDialog = false
+                    showDialogSuccess = false
+                    navController.popBackStack()
+                }
+            )
+        }
+        if (showDialogUpdate){
+            DisplayUpdateDialog(
+                onConfirmation = {
+                    showDialogUpdate = false
                     navController.popBackStack()
                 }
             )
@@ -164,22 +196,26 @@ fun DetailScreen(navController: NavHostController, id: Long){
 
 @Composable
 fun OrderMenu(
-    id: Long,
+    idOrder: Long?,
+    idMenu: Long,
     nama: String,
     deskripsi: String,
     hargaAsli: Int,
     harga: String,
     gambar: Int,
-    onShowDialog: () -> Unit,
+    catatan: String,
+    quantity: Int,
+    onCatatanChange: (String) -> Unit,
+    onQuantityChange: (Int) -> Unit,
+    onShowDialogSuccess: () -> Unit,
+    onShowDialogUpdate: () -> Unit,
     modifier: Modifier = Modifier
 ){
     val context = LocalContext.current
     val factory = ViewModelFactory(context)
     val viewModel: DetailViewModel = viewModel(factory = factory)
 
-    var idMenu by remember { mutableLongStateOf(id) }
-    var catatan by remember { mutableStateOf("") }
-    var quantity by remember { mutableIntStateOf(1) }
+    var idMenu by remember { mutableLongStateOf(idMenu) }
     var totalBayar by remember { mutableIntStateOf(0) }
 
     val grayColor = if (isSystemInDarkTheme()) Color.DarkGray else Color.LightGray
@@ -256,7 +292,7 @@ fun OrderMenu(
                                 containerColor = MaterialTheme.colorScheme.surface,
                                 disabledContainerColor = MaterialTheme.colorScheme.surface
                             ),
-                            onClick = {quantity -= 1},
+                            onClick = {onQuantityChange(quantity - 1)},
                             enabled = disableButton,
                             contentPadding = PaddingValues(0.dp),
                             modifier = Modifier
@@ -279,7 +315,7 @@ fun OrderMenu(
                                 containerColor = MaterialTheme.colorScheme.surface
                             ),
                             contentPadding = PaddingValues(0.dp),
-                            onClick = {quantity += 1},
+                            onClick = {onQuantityChange(quantity + 1)},
                             modifier = Modifier
                                 .size(30.dp)
                                 .border(2.dp, Color.MainGreen, RoundedCornerShape(200.dp))
@@ -371,7 +407,7 @@ fun OrderMenu(
                 )
                 OutlinedTextField(
                     value = catatan,
-                    onValueChange = {catatan = it},
+                    onValueChange = {onCatatanChange(it)},
                     placeholder = { Text(text = stringResource(R.string.contoh_catatan)) },
                     shape = RoundedCornerShape(100.dp),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -390,13 +426,25 @@ fun OrderMenu(
         }
         Button(
             onClick = {
-                viewModel.insertOrder(
-                    idMenu,
-                    catatan,
-                    quantity,
-                    totalBayar
-                )
-                onShowDialog()
+                if (idOrder == null){
+                    viewModel.insertOrder(
+                        idMenu,
+                        catatan,
+                        quantity,
+                        totalBayar
+                    )
+                    onShowDialogSuccess()
+                }
+                else {
+                    viewModel.updateOrder(
+                        idOrder,
+                        idMenu,
+                        catatan,
+                        quantity,
+                        totalBayar
+                    )
+                    onShowDialogUpdate()
+                }
             },
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.MainGreen,
@@ -406,17 +454,25 @@ fun OrderMenu(
             modifier = Modifier
                 .fillMaxWidth()
         ) {
-            Text(
-                text = stringResource(R.string.pesan),
-                fontWeight = FontWeight.Bold,
-                style = MaterialTheme.typography.headlineMedium
-            )
+            if (idOrder == null){
+                Text(
+                    text = stringResource(R.string.pesan),
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.headlineMedium
+                )
+            }else{
+                Text(
+                    text = stringResource(R.string.update),
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.headlineMedium
+                )
+            }
         }
     }
 }
 
 fun formatHarga(harga: Int): String {
-    val symbols = DecimalFormatSymbols(Locale("id", "ID")) // Memastikan pemisah adalah titik
+    val symbols = DecimalFormatSymbols(Locale("id", "ID"))
     val formatter = DecimalFormat("#,###", symbols)
 
     val hargaFormatted = formatter.format(harga)

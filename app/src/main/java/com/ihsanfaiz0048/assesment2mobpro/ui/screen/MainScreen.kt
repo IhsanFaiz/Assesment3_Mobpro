@@ -222,7 +222,7 @@ fun ScreenContent(showList: Boolean,modifier: Modifier = Modifier, navController
                     "Makanan" -> {
                         items(dataMakanan) {
                             ListItem(menu = it) {
-                                navController.navigate(Screen.DetailMenu.withId(it.id))
+                                navController.navigate(Screen.DetailMenu.create(it.id))
                             }
                             HorizontalDivider()
                         }
@@ -230,7 +230,7 @@ fun ScreenContent(showList: Boolean,modifier: Modifier = Modifier, navController
                     "Minuman" -> {
                         items(dataMinuman) {
                             ListItem(menu = it) {
-                                navController.navigate(Screen.DetailMenu.withId(it.id))
+                                navController.navigate(Screen.DetailMenu.create(it.id))
                             }
                             HorizontalDivider()
                         }
@@ -246,7 +246,7 @@ fun ScreenContent(showList: Boolean,modifier: Modifier = Modifier, navController
                         }
                         items(dataMinuman) {
                             ListItem(menu = it) {
-                                navController.navigate(Screen.DetailMenu.withId(it.id))
+                                navController.navigate(Screen.DetailMenu.create(it.id))
                             }
                             HorizontalDivider()
                         }
@@ -260,7 +260,7 @@ fun ScreenContent(showList: Boolean,modifier: Modifier = Modifier, navController
                         }
                         items(dataMakanan) {
                             ListItem(menu = it) {
-                                navController.navigate(Screen.DetailMenu.withId(it.id))
+                                navController.navigate(Screen.DetailMenu.create(it.id))
                             }
                             HorizontalDivider()
                         }
@@ -331,21 +331,21 @@ fun ScreenContent(showList: Boolean,modifier: Modifier = Modifier, navController
                     "Makanan" -> {
                         items(dataMakanan) {
                             GridItem(menu = it) {
-                                navController.navigate(Screen.DetailMenu.withId(it.id))
+                                navController.navigate(Screen.DetailMenu.create(it.id))
                             }
                         }
                     }
                     "Minuman" -> {
                         items(dataMinuman) {
                             GridItem(menu = it) {
-                                navController.navigate(Screen.DetailMenu.withId(it.id))
+                                navController.navigate(Screen.DetailMenu.create(it.id))
                             }
                         }
                     }
                     else -> {
                         items(data) {
                             GridItem(menu = it) {
-                                navController.navigate(Screen.DetailMenu.withId(it.id))
+                                navController.navigate(Screen.DetailMenu.create(it.id))
                             }
                         }
                     }

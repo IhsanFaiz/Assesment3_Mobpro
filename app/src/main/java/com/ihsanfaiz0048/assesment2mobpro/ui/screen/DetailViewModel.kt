@@ -6,6 +6,7 @@ import com.ihsanfaiz0048.assesment2mobpro.database.MenuDao
 import com.ihsanfaiz0048.assesment2mobpro.database.OrderDao
 import com.ihsanfaiz0048.assesment2mobpro.model.Menu
 import com.ihsanfaiz0048.assesment2mobpro.model.Order
+import com.ihsanfaiz0048.assesment2mobpro.model.OrderWithMenu
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -30,7 +31,26 @@ class DetailViewModel(private val dao: MenuDao, private val daoOrder: OrderDao) 
         }
     }
 
+    fun updateOrder(idOrder: Long, idMenu: Long, catatan: String?, quantity: Int, totalBayar: Int){
+        val order = Order(
+            id = idOrder,
+            idMenu = idMenu,
+            catatan = catatan,
+            quantity = quantity,
+            totalBayar = totalBayar,
+            tanggal = formatter.format(Date())
+        )
+
+        viewModelScope.launch(Dispatchers.IO) {
+            daoOrder.update(order)
+        }
+    }
+
     suspend fun getMenu(id: Long): Menu? {
         return dao.getMenuById(id)
+    }
+
+    suspend fun getOrderWithMenuEdit(id: Long): OrderWithMenu? {
+        return daoOrder.getDetailOrderWithMenu(id)
     }
 }
