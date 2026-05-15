@@ -85,7 +85,7 @@ fun HistoryDetail(navController: NavHostController, id: Long){
                 },
                 title = {
                     Text(
-                        text = stringResource(R.string.detail),
+                        text = stringResource(R.string.detail_pesanan),
                         fontWeight = FontWeight.ExtraBold,
                         style = MaterialTheme.typography.headlineSmall
                     )

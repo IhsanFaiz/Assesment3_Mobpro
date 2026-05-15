@@ -204,7 +204,7 @@ fun ListItemHistory(orderWithMenu: OrderWithMenu, onClick: () -> Unit, currentTi
                 )
                 Text(
                     text = statusOrder.toString(),
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black,
                     modifier = Modifier
@@ -237,7 +237,8 @@ fun ListItemHistory(orderWithMenu: OrderWithMenu, onClick: () -> Unit, currentTi
                         colors = ButtonDefaults.buttonColors(
                             MaterialTheme.colorScheme.surface,
                             Color.MainGreen
-                        )
+                        ),
+                        contentPadding = PaddingValues(0.dp)
                     ) {
                         Text(
                             text = stringResource(R.string.detail),
@@ -254,14 +255,13 @@ fun ListItemHistory(orderWithMenu: OrderWithMenu, onClick: () -> Unit, currentTi
                             ))
                         },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.surface,
-                            contentColor = grayColor
+                            containerColor = grayColor,
+                            contentColor = MaterialTheme.colorScheme.surface
                         ),
                         contentPadding = PaddingValues(0.dp),
                         modifier = Modifier
                             .width(100.dp)
                             .height(40.dp)
-                            .border(1.dp, grayColor, RoundedCornerShape(100.dp))
                     ) {
                         Text(
                             text = stringResource(R.string.edit),

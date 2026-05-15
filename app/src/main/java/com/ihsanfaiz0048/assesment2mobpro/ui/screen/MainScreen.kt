@@ -382,7 +382,7 @@ fun ListItem(menu: Menu, onClick: () -> Unit){
                 Text(
                     text = menu.deskripsi,
                     color = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.width(250.dp),
+                    modifier = Modifier.width(200.dp),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -407,6 +407,7 @@ fun ListItem(menu: Menu, onClick: () -> Unit){
                 Button(
                     onClick = {onClick()},
                     modifier = Modifier
+                        .fillMaxWidth()
                         .height(40.dp)
                         .align(Alignment.BottomCenter)
                         .offset(y = 20.dp)
@@ -414,10 +415,12 @@ fun ListItem(menu: Menu, onClick: () -> Unit){
                     colors = ButtonDefaults.buttonColors(
                         MaterialTheme.colorScheme.surface,
                         Color.MainGreen
-                    )
+                    ),
+                    contentPadding = PaddingValues(0.dp)
                 ) {
                     Text(
                         text = stringResource(R.string.pesan),
+
                     )
                 }
             }

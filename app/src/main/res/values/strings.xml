@@ -9,8 +9,9 @@
     <string name="pesanan_diterima">Pesanan Diterima</string>
     <string name="update_berhasil">Update Berhasil</string>
     <string name="tombol_batal">Batal</string>
-    <string name="detail">Detail Pesanan</string>
+    <string name="detail_pesanan">Detail Pesanan</string>
     <string name="pembelian">Pembelian</string>
+    <string name="detail">Detail</string>
     <string name="tanggal_pesan">Tanggal Pemesanan</string>
     <string name="detail_pembelian">Detail Pembelian</string>
     <string name="lainnya">Opsi lainnya</string>

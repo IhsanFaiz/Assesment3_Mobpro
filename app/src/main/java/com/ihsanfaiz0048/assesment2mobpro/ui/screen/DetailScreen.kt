@@ -16,7 +16,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Textsms
@@ -224,6 +226,8 @@ fun OrderMenu(
         modifier = modifier
             .fillMaxHeight()
             .padding(16.dp)
+            .verticalScroll(rememberScrollState())
+        ,
     ) {
         Column(
             verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -232,7 +236,7 @@ fun OrderMenu(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(250.dp)
+                    .height(200.dp)
                     .border(1.dp, grayColor, RoundedCornerShape(16.dp))
                     .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
                     .padding(16.dp)
@@ -245,21 +249,21 @@ fun OrderMenu(
                         Text(
                             text = nama,
                             fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.headlineSmall,
+                            style = MaterialTheme.typography.titleLarge,
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.width(200.dp)
                         )
                         Text(
                             text = deskripsi,
-                            style = MaterialTheme.typography.titleMedium,
+                            style = MaterialTheme.typography.titleSmall,
                             modifier = Modifier.width(150.dp)
                         )
                     }
                     Text(
                         text = "Rp $harga",
                         color = MaterialTheme.colorScheme.secondary,
-                        style = MaterialTheme.typography.titleLarge,
+                        style = MaterialTheme.typography.titleSmall,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                 }
@@ -270,7 +274,7 @@ fun OrderMenu(
                 ) {
                     var disableButton by remember { mutableStateOf(true) }
                     Box(
-                        modifier = Modifier.size(150.dp)
+                        modifier = Modifier.size(100.dp)
                     ){
                         Image(
                             painter = painterResource(gambar),
@@ -282,48 +286,44 @@ fun OrderMenu(
                         )
                     }
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(32.dp),
+                        horizontalArrangement = Arrangement.SpaceAround,
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         disableButton = quantity > 1
                         Button(
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.surface,
-                                disabledContainerColor = MaterialTheme.colorScheme.surface
+                                containerColor = Color.MainGreen,
+                                contentColor = MaterialTheme.colorScheme.surface,
+                                disabledContainerColor = grayColor
                             ),
                             onClick = {onQuantityChange(quantity - 1)},
                             enabled = disableButton,
                             contentPadding = PaddingValues(0.dp),
                             modifier = Modifier
                                 .size(30.dp)
-                                .border(2.dp, Color.MainGreen, RoundedCornerShape(200.dp))
                         ) {
                             Text(
                                 text = "-",
-                                color = Color.MainGreen,
-                                style = MaterialTheme.typography.headlineMedium
                             )
                         }
                         Text(
                             text = quantity.toString(),
                             color = Color.MainGreen,
-                            style = MaterialTheme.typography.titleLarge
+                            style = MaterialTheme.typography.titleMedium
                         )
                         Button(
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.surface
+                                containerColor = Color.MainGreen,
+                                contentColor = MaterialTheme.colorScheme.surface
                             ),
                             contentPadding = PaddingValues(0.dp),
                             onClick = {onQuantityChange(quantity + 1)},
                             modifier = Modifier
                                 .size(30.dp)
-                                .border(2.dp, Color.MainGreen, RoundedCornerShape(200.dp))
                         ) {
                             Text(
                                 text = "+",
-                                color = Color.MainGreen,
-                                style = MaterialTheme.typography.headlineMedium
                             )
                         }
                     }
@@ -332,7 +332,7 @@ fun OrderMenu(
             Text(
                 text = stringResource(R.string.ringkasan_pembayaran),
                 fontWeight = FontWeight.Bold,
-                style = MaterialTheme.typography.titleLarge
+                style = MaterialTheme.typography.titleMedium
             )
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -351,11 +351,11 @@ fun OrderMenu(
                 ) {
                     Text(
                         text = stringResource(R.string.harga),
-                        style = MaterialTheme.typography.titleLarge
+                        style = MaterialTheme.typography.titleMedium
                     )
                     Text(
                         text = formatHarga(totalHarga),
-                        style = MaterialTheme.typography.titleLarge
+                        style = MaterialTheme.typography.titleMedium
                     )
                 }
                 Row(
@@ -364,11 +364,11 @@ fun OrderMenu(
                 ) {
                     Text(
                         text = stringResource(R.string.biaya_penanganan),
-                        style = MaterialTheme.typography.titleLarge
+                        style = MaterialTheme.typography.titleMedium
                     )
                     Text(
                         text = formatHarga(biayaPenaganan),
-                        style = MaterialTheme.typography.titleLarge
+                        style = MaterialTheme.typography.titleMedium
                     )
                 }
                 HorizontalDivider()
@@ -378,12 +378,12 @@ fun OrderMenu(
                 ) {
                     Text(
                         text = stringResource(R.string.total_bayar),
-                        style = MaterialTheme.typography.titleLarge,
+                        style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
                         text = formatHarga(totalBayar),
-                        style = MaterialTheme.typography.titleLarge,
+                        style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -399,16 +399,16 @@ fun OrderMenu(
                 Text(
                     text = stringResource(R.string.catatan),
                     fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.titleLarge
+                    style = MaterialTheme.typography.titleMedium
                 )
                 Text(
                     text = stringResource(R.string.opsional),
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleSmall
                 )
                 OutlinedTextField(
                     value = catatan,
                     onValueChange = {onCatatanChange(it)},
-                    placeholder = { Text(text = stringResource(R.string.contoh_catatan)) },
+                    placeholder = { Text(text = stringResource(R.string.contoh_catatan), style = MaterialTheme.typography.titleSmall) },
                     shape = RoundedCornerShape(100.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color.MainGreen,
@@ -458,13 +458,13 @@ fun OrderMenu(
                 Text(
                     text = stringResource(R.string.pesan),
                     fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.headlineMedium
+                    style = MaterialTheme.typography.titleLarge
                 )
             }else{
                 Text(
                     text = stringResource(R.string.update),
                     fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.headlineMedium
+                    style = MaterialTheme.typography.titleLarge
                 )
             }
         }
