@@ -2,7 +2,7 @@
     <string name="app_name">Brewly</string>
     <string name="kembali">Kembali</string>
     <string name="simpan">Simpan</string>
-    <string name="hapus_history">Hapus History</string>
+    <string name="hapus_pesanan">Hapus Pesanan</string>
     <string name="ok">Ok</string>
     <string name="pesan_hapus">Hapus History?</string>
     <string name="tombol_hapus">Hapus</string>
@@ -24,10 +24,11 @@
     <string name="makanan">Makanan</string>
     <string name="minuman">Minuman</string>
     <string name="semua">Semua</string>
-    <string name="pesan">Pesan</string>
+    <string name="pesanan">Pesanan</string>
     <string name="harga">Harga</string>
     <string name="edit">Edit</string>
     <string name="update">Update</string>
+    <string name="pesan">Pesan</string>
     <string name="catatan">Catatan</string>
     <string name="opsional">Opsional</string>
     <string name="contoh_catatan">Contoh: banyakin porsinya, ya</string>

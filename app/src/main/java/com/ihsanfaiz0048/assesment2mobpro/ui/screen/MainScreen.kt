@@ -27,8 +27,10 @@ import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ReceiptLong
 import androidx.compose.material.icons.filled.Coffee
 import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.ReceiptLong
 import androidx.compose.material.icons.outlined.SettingsInputComponent
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -129,7 +131,7 @@ fun MainScreen(navController: NavHostController){
                         navController.navigate(Screen.HistoryScreen.route)
                     }) {
                         Icon(
-                            imageVector = Icons.Outlined.History,
+                            imageVector = Icons.AutoMirrored.Outlined.ReceiptLong,
                             contentDescription = stringResource(R.string.history),
                             tint = Color.TextGreen
                         )

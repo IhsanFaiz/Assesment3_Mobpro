@@ -270,7 +270,7 @@ fun HistoryDetailContent(
             contentPadding = PaddingValues(0.dp)
         ) {
             Text(
-                text = stringResource(R.string.hapus_history),
+                text = stringResource(R.string.hapus_pesanan),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )

@@ -82,7 +82,7 @@ fun HistoryScreen(navController: NavHostController){
                 },
                 title = {
                     Text(
-                        text = stringResource(R.string.history),
+                        text = stringResource(R.string.pesanan),
                         fontWeight = FontWeight.ExtraBold,
                         style = MaterialTheme.typography.headlineSmall
                     )
@@ -261,7 +261,7 @@ fun ListItemHistory(orderWithMenu: OrderWithMenu, onClick: () -> Unit, currentTi
                         contentPadding = PaddingValues(0.dp),
                         modifier = Modifier
                             .width(100.dp)
-                            .height(40.dp)
+                            .height(30.dp)
                     ) {
                         Text(
                             text = stringResource(R.string.edit),
