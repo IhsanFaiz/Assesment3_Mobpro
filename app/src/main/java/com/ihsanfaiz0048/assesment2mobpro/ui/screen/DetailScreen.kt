@@ -57,6 +57,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.ihsanfaiz0048.assesment2mobpro.R
+import com.ihsanfaiz0048.assesment2mobpro.navigation.Screen
 import com.ihsanfaiz0048.assesment2mobpro.ui.theme.MainGreen
 import com.ihsanfaiz0048.assesment2mobpro.ui.theme.TextGreen
 import com.ihsanfaiz0048.assesment2mobpro.util.ViewModelFactory
@@ -154,7 +155,7 @@ fun DetailScreen(navController: NavHostController, idMenu: Long, idOrder: Long? 
             DisplaySuccessDialog(
                 onConfirmation = {
                     showDialogSuccess = false
-                    navController.popBackStack()
+                    navController.navigate(Screen.HistoryScreen.route)
                 }
             )
         }
