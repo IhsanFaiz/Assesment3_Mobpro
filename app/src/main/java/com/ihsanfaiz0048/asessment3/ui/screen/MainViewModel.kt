@@ -1,0 +1,27 @@
+package com.ihsanfaiz0048.asessment3.ui.screen
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.ihsanfaiz0048.asessment3.database.MenuDao
+import com.ihsanfaiz0048.asessment3.model.Menu
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
+
+class MainViewModel(dao: MenuDao) : ViewModel() {
+    val data: StateFlow<List<Menu>> = dao.getMenu().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(),
+        initialValue = emptyList()
+    )
+    val dataMakanan: StateFlow<List<Menu>> = dao.getMenuMakanan().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(),
+        initialValue = emptyList()
+    )
+    val dataMinuman: StateFlow<List<Menu>> = dao.getMenuMinuman().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(),
+        initialValue = emptyList()
+    )
+}
