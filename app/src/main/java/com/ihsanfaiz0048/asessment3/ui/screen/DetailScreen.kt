@@ -184,7 +184,6 @@ fun DetailScreen(navController: NavHostController, idMenu: Long, idOrder: Long? 
                 }
             )
         }
-        LazyReview(menuId, viewModel, user.email)
     }
 }
 
@@ -419,6 +418,7 @@ fun OrderMenu(
                 )
             }
         }
+        LazyReview(idMenu, viewModel, userId)
         Button(
             onClick = {
                 if (userId.isEmpty()) {
@@ -482,19 +482,19 @@ fun LazyReview(menuId: Int, viewModel: DetailViewModel, userId: String){
     val status by viewModel.status.collectAsState()
 
     LaunchedEffect(key1 = menuId) {
-        viewModel.loadReviews(menuId)
+        viewModel.loadReviews(menuId, userId)
     }
 
     when(status){
         ApiStatus.LOADING -> {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Column (modifier = Modifier.fillMaxWidth(),horizontalAlignment = Alignment.CenterHorizontally) {
                 CircularProgressIndicator(color = Color.MainGreen)
             }
         }
         ApiStatus.FAILED -> {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+            Column (
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -514,7 +514,7 @@ fun LazyReview(menuId: Int, viewModel: DetailViewModel, userId: String){
 
                     Button(
                         onClick = {
-                            viewModel.loadReviews(menuId)
+                            viewModel.loadReviews(menuId, userId)
                         }
                     ) {
                         Text("Coba Lagi")
@@ -523,16 +523,24 @@ fun LazyReview(menuId: Int, viewModel: DetailViewModel, userId: String){
             }
         }
         ApiStatus.SUCCESS -> {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(bottom = 84.dp)
-            ){
-                items(dataReview) {
-                    ReviewItems(review = it)
+            if (dataReview.isEmpty()){
+                Text(
+                    text = stringResource(R.string.review_kosong)
+                )
+            }else{
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(bottom = 84.dp)
+                ){
+                    items(dataReview) {
+                        ReviewItems(review = it)
+                    }
                 }
             }
         }
     }
+
+
 }
 
 

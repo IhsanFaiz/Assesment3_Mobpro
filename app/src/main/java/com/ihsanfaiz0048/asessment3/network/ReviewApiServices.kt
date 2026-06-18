@@ -1,15 +1,18 @@
 package com.ihsanfaiz0048.asessment3.network
 
 import com.ihsanfaiz0048.asessment3.model.Review
+import com.ihsanfaiz0048.asessment3.model.ReviewRequest
 import com.ihsanfaiz0048.asessment3.supabase.Constants
 import com.squareup.moshi.KotlinJsonAdapterFactory
 import com.squareup.moshi.Moshi
+import okhttp3.RequestBody
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 private const val BASE_URL = Constants.SUPABASE_URL
@@ -29,7 +32,7 @@ interface ReviewApiServices {
     suspend fun getReview(
         @Header("apikey") apiKey: String,
         @Header("Authorization") authorization: String,
-        @Query("menuId") menuId: String,
+        @Query("menu_id") menuId: String,
         @Query("select") select: String = "*"
     ): List<Review>
 
@@ -37,8 +40,17 @@ interface ReviewApiServices {
     suspend fun insertReview(
         @Header("apikey") apiKey: String,
         @Header("Authorization") authorization: String,
-        @Body review: Review
+        @Body review: ReviewRequest
     )
+
+    @POST("storage/v1/object/{bucket}/{image_name}")
+    suspend fun uploadImage(
+        @Header("apikey") apiKey: String,
+        @Header("Authorization") authorization: String,
+        @Path("bucket") bucket: String,
+        @Path("image_name") imageName: String,
+        @Body file: RequestBody
+    ): Map<String, String>
 }
 
 object ReviewApi {

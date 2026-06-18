@@ -103,12 +103,12 @@ class DetailViewModel : ViewModel() {
     val status: StateFlow<ApiStatus> = _status
 
 
-    fun loadReviews(menuId: Int){
+    fun loadReviews(menuId: Int, userId: String){
         viewModelScope.launch(Dispatchers.IO){
             try {
                 val response = ReviewApi.services.getReview(
                     Constants.SUPABASE_KEY,
-                    "Bearer ${Constants.SUPABASE_KEY}",
+                    userId,
                     "eq.$menuId"
                 )
                 _reviewState.value = response

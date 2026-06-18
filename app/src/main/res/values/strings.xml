@@ -3,7 +3,7 @@
     <string name="kembali">Kembali</string>
     <string name="simpan">Simpan</string>
     <string name="hapus_pesanan">Hapus Pesanan</string>
-    <string name="ok">Ok</string>
+    <string name="ok">OK</string>
     <string name="pesan_hapus">Hapus History?</string>
     <string name="tombol_hapus">Hapus</string>
     <string name="pesanan_diterima">Pesanan Diterima</string>
@@ -29,11 +29,17 @@
     <string name="edit">Edit</string>
     <string name="update">Update</string>
     <string name="pesan">Pesan</string>
+    <string name="review_kosong">Tidak Ada Review</string>
     <string name="catatan">Catatan</string>
     <string name="opsional">Opsional</string>
     <string name="profil">Profil</string>
+    <string name="gimana">Gimana %1$snya?</string>
+    <string name="label_review">Punya sepatah dua patah kata?</string>
     <string name="logout">Logout</string>
+    <string name="kirim">Kirim</string>
+    <string name="barista">Sayang deh sama barista-nya!</string>
     <string name="tutup">Tutup</string>
+    <string name="ambil_foto">Ambil Foto</string>
     <string name="contoh_catatan">Contoh: banyakin porsinya, ya</string>
     <string name="total_bayar">Total Pembayaran</string>
     <string name="biaya_penanganan">Biaya Penanganan</string>
