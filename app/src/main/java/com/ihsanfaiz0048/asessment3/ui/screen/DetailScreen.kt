@@ -1,8 +1,10 @@
 package com.ihsanfaiz0048.asessment3.ui.screen
 
-import androidx.compose.foundation.Image
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,9 +15,12 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -24,6 +29,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Textsms
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -37,9 +43,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -49,15 +55,21 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.ihsanfaiz0048.asessment3.navigation.Screen
 import com.ihsanfaiz0048.asessment3.R
+import com.ihsanfaiz0048.asessment3.model.Review
+import com.ihsanfaiz0048.asessment3.model.User
+import com.ihsanfaiz0048.asessment3.network.ApiStatus
+import com.ihsanfaiz0048.asessment3.network.UserDataStore
 import com.ihsanfaiz0048.asessment3.ui.theme.MainGreen
 import com.ihsanfaiz0048.asessment3.ui.theme.TextGreen
 import com.ihsanfaiz0048.asessment3.util.ViewModelFactory
@@ -71,12 +83,14 @@ fun DetailScreen(navController: NavHostController, idMenu: Long, idOrder: Long? 
     val context = LocalContext.current
     val factory = ViewModelFactory(context)
     val viewModel: DetailViewModel = viewModel(factory = factory)
+    val dataStoreUser = UserDataStore(context)
+    val user by dataStoreUser.userFlow.collectAsState(User())
 
-    var idMenu by remember { mutableLongStateOf(idMenu) }
+    var menuId by remember { mutableIntStateOf(idMenu.toInt()) }
     var nama by remember{ mutableStateOf("") }
     var deskripsi by remember { mutableStateOf("") }
     var harga by remember { mutableIntStateOf(0) }
-    var gambar by remember { mutableIntStateOf(R.drawable.baseline_coffee_24) }
+    var gambar by remember { mutableStateOf("") }
     var quantity by remember { mutableIntStateOf(1) }
     var catatan: String by remember { mutableStateOf("") }
 
@@ -84,19 +98,21 @@ fun DetailScreen(navController: NavHostController, idMenu: Long, idOrder: Long? 
     var showDialogUpdate by remember { mutableStateOf(false) }
 
 
-    LaunchedEffect(idMenu, idOrder) {
+    LaunchedEffect(user.email) {
+        
         if (idOrder == null){
-            val data = viewModel.getMenu(idMenu) ?: return@LaunchedEffect
+            val data = viewModel.getMenu(menuId, user.email) ?: return@LaunchedEffect
 
-            idMenu = data.id
+            menuId = data.id
             nama = data.nama
             deskripsi = data.deskripsi
             harga = data.harga
             gambar = data.gambar
-        }else{
-            val dataOrder = viewModel.getOrderWithMenuEdit(idOrder) ?: return@LaunchedEffect
 
-            idMenu = dataOrder.menu.id
+        }else{
+            val dataOrder = viewModel.getOrderWithMenuEdit(user.email, idOrder.toInt()) ?: return@LaunchedEffect
+
+            menuId = dataOrder.menu.id
             nama = dataOrder.menu.nama
             deskripsi = dataOrder.menu.deskripsi
             harga = dataOrder.menu.harga
@@ -132,8 +148,9 @@ fun DetailScreen(navController: NavHostController, idMenu: Long, idOrder: Long? 
         }
     ) { padding ->
         OrderMenu(
-            idOrder = idOrder,
-            idMenu = idMenu,
+            userId = user.email,
+            idOrder = idOrder?.toInt(),
+            idMenu = menuId,
             nama = nama,
             deskripsi = deskripsi,
             hargaAsli = harga,
@@ -167,45 +184,20 @@ fun DetailScreen(navController: NavHostController, idMenu: Long, idOrder: Long? 
                 }
             )
         }
+        LazyReview(menuId, viewModel, user.email)
     }
 }
 
-//@Composable
-//fun DeleteAction(delete: () -> Unit){
-//    var expanded by remember { mutableStateOf(false) }
-//
-//    IconButton(onClick = {expanded = true}) {
-//        Icon(
-//            imageVector = Icons.Filled.MoreVert,
-//            contentDescription = stringResource(R.string.hapus),
-//            tint = MaterialTheme.colorScheme.primary
-//        )
-//        DropdownMenu(
-//            expanded = expanded,
-//            onDismissRequest = { expanded = false }
-//        ) {
-//            DropdownMenuItem(
-//                text = {
-//                    Text(text = stringResource(id = R.string.hapus))
-//                },
-//                onClick = {
-//                    expanded = false
-//                    delete()
-//                }
-//            )
-//        }
-//    }
-//}
-
 @Composable
 fun OrderMenu(
-    idOrder: Long?,
-    idMenu: Long,
+    userId: String,
+    idOrder: Int?,
+    idMenu: Int,
     nama: String,
     deskripsi: String,
     hargaAsli: Int,
     harga: String,
-    gambar: Int,
+    gambar: String,
     catatan: String,
     quantity: Int,
     onCatatanChange: (String) -> Unit,
@@ -218,7 +210,6 @@ fun OrderMenu(
     val factory = ViewModelFactory(context)
     val viewModel: DetailViewModel = viewModel(factory = factory)
 
-    var idMenu by remember { mutableLongStateOf(idMenu) }
     var totalBayar by remember { mutableIntStateOf(0) }
 
     val grayColor = if (isSystemInDarkTheme()) Color.DarkGray else Color.LightGray
@@ -277,8 +268,11 @@ fun OrderMenu(
                     Box(
                         modifier = Modifier.size(100.dp)
                     ){
-                        Image(
-                            painter = painterResource(gambar),
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(gambar)
+                                .crossfade(true)
+                                .build(),
                             contentDescription = nama,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
@@ -427,17 +421,27 @@ fun OrderMenu(
         }
         Button(
             onClick = {
+                if (userId.isEmpty()) {
+                    Toast.makeText(
+                        context,
+                        "Silakan login terlebih dahulu",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    return@Button
+                }
                 if (idOrder == null){
                     viewModel.insertOrder(
+                        userId,
                         idMenu,
                         catatan,
                         quantity,
-                        totalBayar
+                        totalBayar,
                     )
                     onShowDialogSuccess()
                 }
                 else {
                     viewModel.updateOrder(
+                        userId,
                         idOrder,
                         idMenu,
                         catatan,
@@ -471,6 +475,117 @@ fun OrderMenu(
         }
     }
 }
+
+@Composable
+fun LazyReview(menuId: Int, viewModel: DetailViewModel, userId: String){
+    val dataReview by viewModel.reviewState.collectAsState()
+    val status by viewModel.status.collectAsState()
+
+    LaunchedEffect(key1 = menuId) {
+        viewModel.loadReviews(menuId)
+    }
+
+    when(status){
+        ApiStatus.LOADING -> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = Color.MainGreen)
+            }
+        }
+        ApiStatus.FAILED -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = "Gagal memuat data",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Text(
+                        text = "Periksa koneksi internet Anda lalu coba lagi.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center
+                    )
+
+                    Button(
+                        onClick = {
+                            viewModel.loadReviews(menuId)
+                        }
+                    ) {
+                        Text("Coba Lagi")
+                    }
+                }
+            }
+        }
+        ApiStatus.SUCCESS -> {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(bottom = 84.dp)
+            ){
+                items(dataReview) {
+                    ReviewItems(review = it)
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+fun ReviewItems(review: Review){
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ){
+        Row (
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ){
+            Column (
+                modifier = Modifier.fillMaxHeight(),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ){
+                Text(
+                    text = review.review,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Text(
+                    text = review.star.toString(),
+                    color = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier.width(200.dp),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            Box(
+                modifier = Modifier.size(100.dp)
+            ){
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(review.imageUrl)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(8.dp))
+                )
+            }
+        }
+    }
+}
+
 
 fun formatHarga(harga: Int): String {
     val symbols = DecimalFormatSymbols(Locale("id", "ID"))

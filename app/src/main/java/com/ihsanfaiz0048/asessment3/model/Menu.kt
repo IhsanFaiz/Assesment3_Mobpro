@@ -1,15 +1,12 @@
 package com.ihsanfaiz0048.asessment3.model
 
-import androidx.room.Entity
-import androidx.room.PrimaryKey
+import com.squareup.moshi.Json
 
-@Entity(tableName = "menu")
 data class Menu(
-    @PrimaryKey(autoGenerate = true)
-    val id: Long = 0L,
+    val id: Int,
     val nama: String,
     val deskripsi: String,
     val kategori: String,
     val harga: Int,
-    val gambar: Int
+    val gambar: String
 )

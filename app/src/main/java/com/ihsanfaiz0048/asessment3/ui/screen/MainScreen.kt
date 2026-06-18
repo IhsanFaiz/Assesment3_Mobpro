@@ -1,6 +1,8 @@
 package com.ihsanfaiz0048.asessment3.ui.screen
 
+import android.content.Context
 import android.content.res.Configuration
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -34,6 +36,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -61,12 +64,28 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.credentials.ClearCredentialStateRequest
+import androidx.credentials.CredentialManager
+import androidx.credentials.CustomCredential
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.GetCredentialResponse
+import androidx.credentials.exceptions.ClearCredentialException
+import androidx.credentials.exceptions.GetCredentialException
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
+import com.ihsanfaiz0048.asessment3.BuildConfig
 import com.ihsanfaiz0048.asessment3.model.Menu
 import com.ihsanfaiz0048.asessment3.navigation.Screen
 import com.ihsanfaiz0048.asessment3.R
+import com.ihsanfaiz0048.asessment3.model.User
+import com.ihsanfaiz0048.asessment3.network.ApiStatus
+import com.ihsanfaiz0048.asessment3.network.UserDataStore
 import com.ihsanfaiz0048.asessment3.ui.theme.Asessment3Theme
 import com.ihsanfaiz0048.asessment3.ui.theme.MainGreen
 import com.ihsanfaiz0048.asessment3.ui.theme.TextGreen
@@ -81,6 +100,10 @@ import kotlinx.coroutines.launch
 fun MainScreen(navController: NavHostController){
     val dataStore = SettingsDataStore(LocalContext.current)
     val showList by dataStore.layoutFlow.collectAsState(true)
+    val context = LocalContext.current
+    val dataStoreUser = UserDataStore(context)
+    var showDialog by remember { mutableStateOf(false) }
+    val user by dataStoreUser.userFlow.collectAsState(User())
 
     Scaffold(
         topBar = {
@@ -126,7 +149,17 @@ fun MainScreen(navController: NavHostController){
                         )
                     }
                     IconButton(onClick = {
-                        navController.navigate(Screen.HistoryScreen.route)
+                        if (user.email.isEmpty()){
+                            CoroutineScope(Dispatchers.IO).launch{
+                                signIn(
+                                    context,
+                                    dataStoreUser
+                                )
+                            }
+                        }
+                        else{
+                            navController.navigate(Screen.HistoryScreen.route)
+                        }
                     }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.ReceiptLong,
@@ -134,25 +167,52 @@ fun MainScreen(navController: NavHostController){
                             tint = Color.TextGreen
                         )
                     }
+                    IconButton(onClick = {
+                        if (user.email.isEmpty()){
+                            CoroutineScope(Dispatchers.IO).launch{signIn(context, dataStoreUser)}
+                        } else {
+                            showDialog = true
+                        }
+                    }) {
+                        Icon(
+                            painter = painterResource(R.drawable.baseline_account_circle_24),
+                            contentDescription = stringResource(R.string.profil),
+                            tint = Color.TextGreen
+                        )
+                    }
                 }
             )
         }
     ) { innerPadding ->
-        ScreenContent(showList, Modifier.padding(innerPadding), navController)
+        ScreenContent(showList, Modifier.padding(innerPadding),user.email, navController)
+        if (showDialog){
+            ProfileDialog(
+                user = user,
+                onDismissRequest = {showDialog = false}
+            ){
+                CoroutineScope(Dispatchers.IO).launch { signOut(context, dataStoreUser) }
+                showDialog = false
+            }
+        }
     }
 }
 
 @Composable
-fun ScreenContent(showList: Boolean,modifier: Modifier = Modifier, navController: NavHostController){
+fun ScreenContent(showList: Boolean,modifier: Modifier = Modifier, userId: String, navController: NavHostController){
     val context = LocalContext.current
     val factory = ViewModelFactory(context)
     val viewModel: MainViewModel = viewModel(factory = factory)
     val data by viewModel.data.collectAsState()
     val dataMakanan by viewModel.dataMakanan.collectAsState()
     val dataMinuman by viewModel.dataMinuman.collectAsState()
+    val status by viewModel.status.collectAsState()
     var filtered by remember { mutableStateOf("Semua") }
 
-    if (data.isEmpty()){
+    if (status == ApiStatus.LOADING) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(color = Color.MainGreen)
+        }
+    } else if (data.isEmpty()){
         Column(
             modifier = Modifier.fillMaxSize().padding(16.dp),
             verticalArrangement = Arrangement.Center,
@@ -169,60 +229,13 @@ fun ScreenContent(showList: Boolean,modifier: Modifier = Modifier, navController
                 contentPadding = PaddingValues(bottom = 84.dp)
             ) {
                 item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Button(
-                            onClick = {filtered = "Semua"},
-                            modifier = Modifier.padding(8.dp).border(2.dp, Color.MainGreen, RoundedCornerShape(100.dp)),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.surface,
-                                contentColor = Color.MainGreen
-                            )
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.SettingsInputComponent,
-                                contentDescription = ""
-                            )
-                        }
-                        Button(
-                            onClick = {filtered = "Makanan"},
-                            modifier = Modifier.padding(8.dp).border(2.dp, Color.MainGreen, RoundedCornerShape(100.dp)),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.surface,
-                                contentColor = Color.MainGreen
-                            )
-                        ) {
-                            Text(text = stringResource(R.string.makanan), fontWeight = FontWeight.Bold)
-                        }
-                        Button(
-                            onClick = {filtered = "Minuman"},
-                            modifier = Modifier.padding(8.dp).border(2.dp, Color.MainGreen, RoundedCornerShape(100.dp)),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.surface,
-                                contentColor = Color.MainGreen
-                            )
-                        ) {
-                            Text(text = stringResource(R.string.minuman), fontWeight = FontWeight.Bold)
-                        }
-                        Button(
-                            onClick = {filtered = "Semua"},
-                            modifier = Modifier.padding(8.dp).border(2.dp, Color.MainGreen, RoundedCornerShape(100.dp)),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.surface,
-                                contentColor = Color.MainGreen
-                            )
-                        ) {
-                            Text(text = stringResource(R.string.semua), fontWeight = FontWeight.Bold)
-                        }
-                    }
+                    CategoryButtons { filtered = it }
                 }
                 when (filtered) {
                     "Makanan" -> {
                         items(dataMakanan) {
                             ListItem(menu = it) {
-                                navController.navigate(Screen.DetailMenu.create(it.id))
+                                navController.navigate(Screen.DetailMenu.create(it.id.toLong()))
                             }
                             HorizontalDivider()
                         }
@@ -230,7 +243,7 @@ fun ScreenContent(showList: Boolean,modifier: Modifier = Modifier, navController
                     "Minuman" -> {
                         items(dataMinuman) {
                             ListItem(menu = it) {
-                                navController.navigate(Screen.DetailMenu.create(it.id))
+                                navController.navigate(Screen.DetailMenu.create(it.id.toLong()))
                             }
                             HorizontalDivider()
                         }
@@ -246,7 +259,7 @@ fun ScreenContent(showList: Boolean,modifier: Modifier = Modifier, navController
                         }
                         items(dataMinuman) {
                             ListItem(menu = it) {
-                                navController.navigate(Screen.DetailMenu.create(it.id))
+                                navController.navigate(Screen.DetailMenu.create(it.id.toLong()))
                             }
                             HorizontalDivider()
                         }
@@ -260,7 +273,7 @@ fun ScreenContent(showList: Boolean,modifier: Modifier = Modifier, navController
                         }
                         items(dataMakanan) {
                             ListItem(menu = it) {
-                                navController.navigate(Screen.DetailMenu.create(it.id))
+                                navController.navigate(Screen.DetailMenu.create(it.id.toLong()))
                             }
                             HorizontalDivider()
                         }
@@ -278,79 +291,84 @@ fun ScreenContent(showList: Boolean,modifier: Modifier = Modifier, navController
                 item(
                     span = StaggeredGridItemSpan.FullLine
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Button(
-                            onClick = {filtered = "Semua"},
-                            modifier = Modifier.padding(8.dp).border(2.dp, Color.MainGreen, RoundedCornerShape(100.dp)),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.surface,
-                                contentColor = Color.MainGreen
-                            )
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.SettingsInputComponent,
-                                contentDescription = ""
-                            )
-                        }
-                        Button(
-                            onClick = {filtered = "Makanan"},
-                            modifier = Modifier.padding(8.dp).border(2.dp, Color.MainGreen, RoundedCornerShape(100.dp)),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.surface,
-                                contentColor = Color.MainGreen
-                            )
-                        ) {
-                            Text(text = stringResource(R.string.makanan), fontWeight = FontWeight.Bold)
-                        }
-                        Button(
-                            onClick = {filtered = "Minuman"},
-                            modifier = Modifier.padding(8.dp).border(2.dp, Color.MainGreen, RoundedCornerShape(100.dp)),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.surface,
-                                contentColor = Color.MainGreen
-                            )
-                        ) {
-                            Text(text = stringResource(R.string.minuman), fontWeight = FontWeight.Bold)
-                        }
-                        Button(
-                            onClick = {filtered = "Semua"},
-                            modifier = Modifier.padding(8.dp).border(2.dp, Color.MainGreen, RoundedCornerShape(100.dp)),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.surface,
-                                contentColor = Color.MainGreen
-                            )
-                        ) {
-                            Text(text = stringResource(R.string.semua), fontWeight = FontWeight.Bold)
-                        }
-                    }
+                    CategoryButtons { filtered = it }
                 }
                 when (filtered) {
                     "Makanan" -> {
                         items(dataMakanan) {
                             GridItem(menu = it) {
-                                navController.navigate(Screen.DetailMenu.create(it.id))
+                                navController.navigate(Screen.DetailMenu.create(it.id.toLong()))
                             }
                         }
                     }
                     "Minuman" -> {
                         items(dataMinuman) {
                             GridItem(menu = it) {
-                                navController.navigate(Screen.DetailMenu.create(it.id))
+                                navController.navigate(Screen.DetailMenu.create(it.id.toLong()))
                             }
                         }
                     }
                     else -> {
                         items(data) {
                             GridItem(menu = it) {
-                                navController.navigate(Screen.DetailMenu.create(it.id))
+                                navController.navigate(Screen.DetailMenu.create(it.id.toLong()))
                             }
                         }
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun CategoryButtons(onCategorySelected: (String) -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Button(
+            onClick = {onCategorySelected("Semua")},
+            modifier = Modifier.padding(8.dp).border(2.dp, Color.MainGreen, RoundedCornerShape(100.dp)),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = Color.MainGreen
+            )
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.SettingsInputComponent,
+                contentDescription = ""
+            )
+        }
+        Button(
+            onClick = {onCategorySelected("Makanan")},
+            modifier = Modifier.padding(8.dp).border(2.dp, Color.MainGreen, RoundedCornerShape(100.dp)),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = Color.MainGreen
+            )
+        ) {
+            Text(text = stringResource(R.string.makanan), fontWeight = FontWeight.Bold)
+        }
+        Button(
+            onClick = {onCategorySelected("Minuman")},
+            modifier = Modifier.padding(8.dp).border(2.dp, Color.MainGreen, RoundedCornerShape(100.dp)),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = Color.MainGreen
+            )
+        ) {
+            Text(text = stringResource(R.string.minuman), fontWeight = FontWeight.Bold)
+        }
+        Button(
+            onClick = {onCategorySelected("Semua")},
+            modifier = Modifier.padding(8.dp).border(2.dp, Color.MainGreen, RoundedCornerShape(100.dp)),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = Color.MainGreen
+            )
+        ) {
+            Text(text = stringResource(R.string.semua), fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -396,8 +414,11 @@ fun ListItem(menu: Menu, onClick: () -> Unit){
             Box(
                 modifier = Modifier.size(100.dp)
             ){
-                Image(
-                    painter = painterResource(menu.gambar),
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(menu.gambar)
+                        .crossfade(true)
+                        .build(),
                     contentDescription = menu.nama,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
@@ -420,12 +441,10 @@ fun ListItem(menu: Menu, onClick: () -> Unit){
                 ) {
                     Text(
                         text = stringResource(R.string.pesan),
-
                     )
                 }
             }
         }
-
     }
 }
 
@@ -447,8 +466,11 @@ fun GridItem(menu: Menu, onClick: () -> Unit){
                     .width(200.dp)
                     .clip(RoundedCornerShape(8.dp))
             ){
-                Image(
-                    painter = painterResource(menu.gambar),
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(menu.gambar)
+                        .crossfade(true)
+                        .build(),
                     contentDescription = menu.nama,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
@@ -484,6 +506,57 @@ fun GridItem(menu: Menu, onClick: () -> Unit){
         }
     }
 }
+
+private suspend fun signIn(context: Context, dataStore: UserDataStore){
+    val googleIdOption: GetGoogleIdOption = GetGoogleIdOption.Builder()
+        .setFilterByAuthorizedAccounts(false)
+        .setServerClientId(BuildConfig.API_KEY)
+        .build()
+
+    val request: GetCredentialRequest = GetCredentialRequest.Builder()
+        .addCredentialOption(googleIdOption)
+        .build()
+
+    try {
+        val credentialManager = CredentialManager.create(context)
+        val result = credentialManager.getCredential(context, request)
+        handleSignIn(result, dataStore)
+    }catch (e: GetCredentialException){
+        Log.e("SIGN-IN", "Error: ${e.errorMessage}" )
+    }
+}
+
+private suspend fun handleSignIn(result: GetCredentialResponse, dataStore: UserDataStore){
+    val credential = result.credential
+    if (credential is CustomCredential && credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL){
+        try {
+            val googleId = GoogleIdTokenCredential.createFrom(credential.data)
+            val nama = googleId.displayName ?: ""
+            val email = googleId.id
+            val photoUrl = googleId.profilePictureUri.toString()
+            dataStore.saveData(User(nama, email, photoUrl))
+        }catch (e: GoogleIdTokenParsingException){
+            Log.e("SIGN-IN", "Error: ${e.message}")
+        }
+    }else{
+        Log.e("SIGN-IN", "Error: unrecognized custom credential type.")
+    }
+}
+
+private suspend fun signOut(context: Context, dataStore: UserDataStore) {
+    try {
+        val credentialManager = CredentialManager.create(context)
+
+        credentialManager.clearCredentialState(
+            ClearCredentialStateRequest()
+        )
+
+        dataStore.saveData(User())
+    } catch (e: ClearCredentialException) {
+        Log.e("SIGN-IN", "Error: ${e.errorMessage}")
+    }
+}
+
 
 @Preview(showBackground = true)
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)

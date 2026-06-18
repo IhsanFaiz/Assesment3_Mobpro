@@ -1,6 +1,5 @@
 package com.ihsanfaiz0048.asessment3.ui.screen
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -25,6 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -55,9 +55,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.ihsanfaiz0048.asessment3.model.OrderWithMenu
 import com.ihsanfaiz0048.asessment3.navigation.Screen
 import com.ihsanfaiz0048.asessment3.R
+import com.ihsanfaiz0048.asessment3.model.User
+import com.ihsanfaiz0048.asessment3.network.ApiStatus
+import com.ihsanfaiz0048.asessment3.network.UserDataStore
 import com.ihsanfaiz0048.asessment3.ui.theme.MainGreen
 import com.ihsanfaiz0048.asessment3.ui.theme.TextGreen
 import com.ihsanfaiz0048.asessment3.util.OrderStatus
@@ -103,9 +108,54 @@ fun HistoryContent(modifier: Modifier = Modifier, navController: NavHostControll
     val context = LocalContext.current
     val factory = ViewModelFactory(context)
     val viewModel: HistoryViewModel = viewModel(factory = factory)
+    val dataStoreUser = UserDataStore(context)
+    val user by dataStoreUser.userFlow.collectAsState(User())
     val data by viewModel.dataHistory.collectAsState()
+    val status by viewModel.status.collectAsState()
 
-    if (data.isEmpty()){
+    LaunchedEffect(user.email) {
+        if (user.email.isNotEmpty()) {
+            viewModel.loadData(user.email)
+        }
+    }
+
+    if (status == ApiStatus.LOADING) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(color = Color.MainGreen)
+        }
+    }
+    else if (status == ApiStatus.FAILED) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = "Gagal memuat data",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Text(
+                    text = "Periksa koneksi internet Anda lalu coba lagi.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center
+                )
+
+                Button(
+                    onClick = {
+                        viewModel.loadData(user.email)
+                    }
+                ) {
+                    Text("Coba Lagi")
+                }
+            }
+        }
+    }
+    else if (data.isEmpty()){
         Column(
             modifier = Modifier.fillMaxSize().padding(16.dp),
             verticalArrangement = Arrangement.Center,
@@ -123,12 +173,8 @@ fun HistoryContent(modifier: Modifier = Modifier, navController: NavHostControll
         }
 
         LaunchedEffect(Unit) {
-
             while (true) {
-
-                currentTime =
-                    System.currentTimeMillis()
-
+                currentTime = System.currentTimeMillis()
                 delay(1000)
             }
         }
@@ -138,7 +184,7 @@ fun HistoryContent(modifier: Modifier = Modifier, navController: NavHostControll
         ){
             items(data){
                 ListItemHistory(orderWithMenu = it, currentTime = currentTime, navController = navController, onClick = {
-                    navController.navigate(Screen.HistoryDetail.withId(it.order.id))
+                    navController.navigate(Screen.HistoryDetail.withId(it.order.id.toLong()))
                 })
                 HorizontalDivider(thickness = 1.dp)
             }
@@ -219,8 +265,11 @@ fun ListItemHistory(orderWithMenu: OrderWithMenu, onClick: () -> Unit, currentTi
                 Box(
                     modifier = Modifier.size(100.dp)
                 ){
-                    Image(
-                        painter = painterResource(orderWithMenu.menu.gambar),
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(orderWithMenu.menu.gambar)
+                            .crossfade(true)
+                            .build(),
                         contentDescription = orderWithMenu.menu.nama,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
@@ -251,8 +300,8 @@ fun ListItemHistory(orderWithMenu: OrderWithMenu, onClick: () -> Unit, currentTi
                         onClick = {
                             navController.navigate(
                                 Screen.DetailMenu.edit(
-                                orderWithMenu.menu.id,
-                                orderWithMenu.order.id
+                                orderWithMenu.menu.id.toLong(),
+                                orderWithMenu.order.id.toLong()
                             ))
                         },
                         colors = ButtonDefaults.buttonColors(

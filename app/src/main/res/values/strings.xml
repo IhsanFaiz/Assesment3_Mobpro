@@ -31,6 +31,9 @@
     <string name="pesan">Pesan</string>
     <string name="catatan">Catatan</string>
     <string name="opsional">Opsional</string>
+    <string name="profil">Profil</string>
+    <string name="logout">Logout</string>
+    <string name="tutup">Tutup</string>
     <string name="contoh_catatan">Contoh: banyakin porsinya, ya</string>
     <string name="total_bayar">Total Pembayaran</string>
     <string name="biaya_penanganan">Biaya Penanganan</string>

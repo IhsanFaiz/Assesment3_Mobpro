@@ -28,9 +28,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -43,6 +43,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.ihsanfaiz0048.asessment3.R
+import com.ihsanfaiz0048.asessment3.model.User
+import com.ihsanfaiz0048.asessment3.network.UserDataStore
 import com.ihsanfaiz0048.asessment3.ui.theme.MainGreen
 import com.ihsanfaiz0048.asessment3.ui.theme.TextGreen
 import com.ihsanfaiz0048.asessment3.util.ViewModelFactory
@@ -53,8 +55,9 @@ fun HistoryDetail(navController: NavHostController, id: Long){
     val context = LocalContext.current
     val factory = ViewModelFactory(context)
     val viewModel: HistoryDetailViewModel = viewModel(factory = factory)
+    val dataStoreUser = UserDataStore(context)
+    val user by dataStoreUser.userFlow.collectAsState(User())
 
-    var id by remember { mutableLongStateOf(id) }
     var nama by remember { mutableStateOf("") }
     var totalHarga by remember { mutableIntStateOf(0) }
     var quantity by remember { mutableIntStateOf(0) }
@@ -62,8 +65,9 @@ fun HistoryDetail(navController: NavHostController, id: Long){
     var catatan: String? by remember { mutableStateOf("") }
     var showAlert by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        val data = viewModel.getDetailHistory(id) ?: return@LaunchedEffect
+    LaunchedEffect(user.email) {
+        if (user.email.isEmpty()) return@LaunchedEffect
+        val data = viewModel.getDetailHistory(user.email, id.toInt()) ?: return@LaunchedEffect
 
         nama = data.menu.nama
         harga = data.menu.harga
@@ -111,7 +115,7 @@ fun HistoryDetail(navController: NavHostController, id: Long){
         if (showAlert){
             DisplayAlertDialog(onDismissRequest = {showAlert = false}) {
                 showAlert = false
-                viewModel.deleteOrder(id)
+                viewModel.deleteOrder(user.email, id.toInt())
                 navController.popBackStack()
             }
         }

@@ -2,8 +2,7 @@ package com.ihsanfaiz0048.asessment3.model
 
 import com.squareup.moshi.Json
 
-data class Order(
-    val id: Int,
+data class OrderRequest(
     @Json(name = "id_menu")
     val idMenu: Int,
     val catatan: String? = null,
