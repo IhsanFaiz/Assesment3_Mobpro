@@ -22,7 +22,7 @@ private val retrofit = Retrofit.Builder()
 
 interface OrderApiServices {
 
-    @GET("order")
+    @GET("rest/v1/order")
     suspend fun getOrders(
         @Header("apikey") apiKey: String,
         @Header("Authorization") authorization: String,
@@ -30,7 +30,7 @@ interface OrderApiServices {
         @Query("select") select: String = "*"
     ): List<Order>
 
-    @GET("order")
+    @GET("rest/v1/order")
     suspend fun getOrderById(
         @Header("apikey") apiKey: String,
         @Header("Authorization") authorization: String,
@@ -38,14 +38,14 @@ interface OrderApiServices {
         @Query("select") select: String = "*"
     ): List<Order>
 
-    @POST("order")
+    @POST("rest/v1/order")
     suspend fun createOrder(
         @Header("apikey") apiKey: String,
         @Header("Authorization") authorization: String,
         @Body order: OrderRequest
     )
 
-    @PATCH("order")
+    @PATCH("rest/v1/order")
     suspend fun updateOrder(
         @Header("apikey") apiKey: String,
         @Header("Authorization") authorization: String,
@@ -53,7 +53,7 @@ interface OrderApiServices {
         @Body order: Order
     )
 
-    @DELETE("order")
+    @DELETE("rest/v1/order")
     suspend fun deleteOrder(
         @Header("apikey") apiKey: String,
         @Header("Authorization") authorization: String,

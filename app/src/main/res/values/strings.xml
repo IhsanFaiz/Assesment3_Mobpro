@@ -31,12 +31,15 @@
     <string name="pesan">Pesan</string>
     <string name="review_kosong">Tidak Ada Review</string>
     <string name="catatan">Catatan</string>
+    <string name="noImage">No Image</string>
+    <string name="review">Reviews</string>
     <string name="opsional">Opsional</string>
     <string name="profil">Profil</string>
     <string name="gimana">Gimana %1$snya?</string>
     <string name="label_review">Punya sepatah dua patah kata?</string>
     <string name="logout">Logout</string>
     <string name="kirim">Kirim</string>
+    <string name="belum_ada_ulasan">Belum ada ulasan untuk menu ini. Jadilah yang pertama memberikan penilaian!</string>
     <string name="barista">Sayang deh sama barista-nya!</string>
     <string name="tutup">Tutup</string>
     <string name="ambil_foto">Ambil Foto</string>

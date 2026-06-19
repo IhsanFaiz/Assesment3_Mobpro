@@ -23,14 +23,14 @@ private val retrofit= Retrofit.Builder()
 
 interface MenuApiServices {
 
-    @GET("menu")
+    @GET("rest/v1/menu")
     suspend fun getMenu(
         @Header("apikey") apiKey: String,
         @Header("Authorization") authorization: String,
         @Query("select") select: String = "*"
     ): List<Menu>
 
-    @GET("menu")
+    @GET("rest/v1/menu")
     suspend fun getMenuById(
         @Header("apikey") apiKey: String,
         @Header("Authorization") authorization: String,
@@ -46,4 +46,4 @@ object MenuApi{
     }
 }
 
-enum class ApiStatus {LOADING, SUCCESS, FAILED}
+enum class ApiStatus {LOADING, SUCCESS, FAILED, IDLE}

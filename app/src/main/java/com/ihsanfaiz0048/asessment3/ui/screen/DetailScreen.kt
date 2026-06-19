@@ -1,21 +1,19 @@
 package com.ihsanfaiz0048.asessment3.ui.screen
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -26,7 +24,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Textsms
+import androidx.compose.material.icons.outlined.ImageNotSupported
+import androidx.compose.material.icons.outlined.RateReview
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -55,19 +57,21 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.ihsanfaiz0048.asessment3.navigation.Screen
 import com.ihsanfaiz0048.asessment3.R
 import com.ihsanfaiz0048.asessment3.model.Review
 import com.ihsanfaiz0048.asessment3.model.User
+import com.ihsanfaiz0048.asessment3.navigation.Screen
 import com.ihsanfaiz0048.asessment3.network.ApiStatus
 import com.ihsanfaiz0048.asessment3.network.UserDataStore
 import com.ihsanfaiz0048.asessment3.ui.theme.MainGreen
@@ -85,6 +89,7 @@ fun DetailScreen(navController: NavHostController, idMenu: Long, idOrder: Long? 
     val viewModel: DetailViewModel = viewModel(factory = factory)
     val dataStoreUser = UserDataStore(context)
     val user by dataStoreUser.userFlow.collectAsState(User())
+    val status by viewModel.status.collectAsState()
 
     var menuId by remember { mutableIntStateOf(idMenu.toInt()) }
     var nama by remember{ mutableStateOf("") }
@@ -93,9 +98,11 @@ fun DetailScreen(navController: NavHostController, idMenu: Long, idOrder: Long? 
     var gambar by remember { mutableStateOf("") }
     var quantity by remember { mutableIntStateOf(1) }
     var catatan: String by remember { mutableStateOf("") }
+    var totalBayar by remember { mutableIntStateOf(0) }
 
     var showDialogSuccess by remember { mutableStateOf(false) }
     var showDialogUpdate by remember { mutableStateOf(false) }
+
 
 
     LaunchedEffect(user.email) {
@@ -145,11 +152,47 @@ fun DetailScreen(navController: NavHostController, idMenu: Long, idOrder: Long? 
                     titleContentColor = Color.TextGreen,
                 ),
             )
+        },
+        bottomBar = {
+            BottomAppBar{
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surface)
+                        .padding(16.dp) // Beri padding biar rapi
+                ) {
+                    Button(
+                        onClick = {
+                            if (user.email.isEmpty()) {
+                                Toast.makeText(context, "Silakan login terlebih dahulu", Toast.LENGTH_SHORT).show()
+                                return@Button
+                            }
+                            if (idOrder == null){
+                                viewModel.insertOrder(user.email, menuId, catatan, quantity, totalBayar)
+                                showDialogSuccess = true
+                            } else {
+                                viewModel.updateOrder(user.email, idOrder.toInt(), menuId, catatan, quantity, totalBayar)
+                                showDialogUpdate = true
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.MainGreen,
+                            contentColor = MaterialTheme.colorScheme.surface
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = stringResource(if (idOrder == null) R.string.pesan else R.string.update),
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                    }
+                }
+            }
         }
     ) { padding ->
         OrderMenu(
             userId = user.email,
-            idOrder = idOrder?.toInt(),
             idMenu = menuId,
             nama = nama,
             deskripsi = deskripsi,
@@ -160,13 +203,9 @@ fun DetailScreen(navController: NavHostController, idMenu: Long, idOrder: Long? 
             quantity = quantity,
             onCatatanChange = {catatan = it},
             onQuantityChange = {quantity = it},
-            onShowDialogSuccess = {
-                showDialogSuccess = true
-            },
-            onShowDialogUpdate = {
-                showDialogUpdate = true
-            },
-            modifier = Modifier.padding(padding)
+            onTotalBayarCalculated = { totalBayar = it },
+            modifier = Modifier.padding(padding),
+            status = status
         )
         if (showDialogSuccess){
             DisplaySuccessDialog(
@@ -190,7 +229,6 @@ fun DetailScreen(navController: NavHostController, idMenu: Long, idOrder: Long? 
 @Composable
 fun OrderMenu(
     userId: String,
-    idOrder: Int?,
     idMenu: Int,
     nama: String,
     deskripsi: String,
@@ -201,19 +239,23 @@ fun OrderMenu(
     quantity: Int,
     onCatatanChange: (String) -> Unit,
     onQuantityChange: (Int) -> Unit,
-    onShowDialogSuccess: () -> Unit,
-    onShowDialogUpdate: () -> Unit,
-    modifier: Modifier = Modifier
+    onTotalBayarCalculated: (Int) -> Unit, // <--- TAMBAHKAN CALLBACK BARU INI
+    modifier: Modifier = Modifier,
+    status: ApiStatus
 ){
     val context = LocalContext.current
     val factory = ViewModelFactory(context)
     val viewModel: DetailViewModel = viewModel(factory = factory)
 
-    var totalBayar by remember { mutableIntStateOf(0) }
+    val totalHarga = hargaAsli * quantity
+    val biayaPenaganan = 3000 * quantity
+    val totalBayarCalculated = totalHarga + biayaPenaganan
+    LaunchedEffect(totalBayarCalculated) {
+        onTotalBayarCalculated(totalBayarCalculated)
+    }
 
     val grayColor = if (isSystemInDarkTheme()) Color.DarkGray else Color.LightGray
     Column(
-        verticalArrangement = Arrangement.SpaceBetween,
         modifier = modifier
             .fillMaxHeight()
             .padding(16.dp)
@@ -336,9 +378,8 @@ fun OrderMenu(
                     .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
                     .padding(16.dp)
             ) {
-                val totalHarga = hargaAsli * quantity
-                val biayaPenaganan = 3000 * quantity
-                totalBayar = totalHarga + biayaPenaganan
+
+
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.fillMaxWidth()
@@ -376,7 +417,7 @@ fun OrderMenu(
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = formatHarga(totalBayar),
+                        text = formatHarga(totalBayarCalculated),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -418,60 +459,12 @@ fun OrderMenu(
                 )
             }
         }
-        LazyReview(idMenu, viewModel, userId)
-        Button(
-            onClick = {
-                if (userId.isEmpty()) {
-                    Toast.makeText(
-                        context,
-                        "Silakan login terlebih dahulu",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    return@Button
-                }
-                if (idOrder == null){
-                    viewModel.insertOrder(
-                        userId,
-                        idMenu,
-                        catatan,
-                        quantity,
-                        totalBayar,
-                    )
-                    onShowDialogSuccess()
-                }
-                else {
-                    viewModel.updateOrder(
-                        userId,
-                        idOrder,
-                        idMenu,
-                        catatan,
-                        quantity,
-                        totalBayar
-                    )
-                    onShowDialogUpdate()
-                }
-            },
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color.MainGreen,
-                contentColor = MaterialTheme.colorScheme.surface
-            ),
-            contentPadding = PaddingValues(0.dp),
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
+                .height(300.dp)
         ) {
-            if (idOrder == null){
-                Text(
-                    text = stringResource(R.string.pesan),
-                    fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.titleLarge
-                )
-            }else{
-                Text(
-                    text = stringResource(R.string.update),
-                    fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.titleLarge
-                )
-            }
+            LazyReview(idMenu, viewModel, userId)
         }
     }
 }
@@ -486,8 +479,9 @@ fun LazyReview(menuId: Int, viewModel: DetailViewModel, userId: String){
     }
 
     when(status){
+        ApiStatus.IDLE -> {}
         ApiStatus.LOADING -> {
-            Column (modifier = Modifier.fillMaxWidth(),horizontalAlignment = Alignment.CenterHorizontally) {
+            Column (modifier = Modifier.fillMaxWidth().padding(top = 16.dp),horizontalAlignment = Alignment.CenterHorizontally) {
                 CircularProgressIndicator(color = Color.MainGreen)
             }
         }
@@ -524,12 +518,18 @@ fun LazyReview(menuId: Int, viewModel: DetailViewModel, userId: String){
         }
         ApiStatus.SUCCESS -> {
             if (dataReview.isEmpty()){
-                Text(
-                    text = stringResource(R.string.review_kosong)
-                )
+                EmptyReviewState()
             }else{
+                Text(
+                    text = stringResource(R.string.review),
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(top = 16.dp)
+                )
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 64.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
                     contentPadding = PaddingValues(bottom = 84.dp)
                 ){
                     items(dataReview) {
@@ -539,8 +539,44 @@ fun LazyReview(menuId: Int, viewModel: DetailViewModel, userId: String){
             }
         }
     }
+}
 
+@Composable
+fun EmptyReviewState(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.RateReview,
+            contentDescription = null,
+            modifier = Modifier.size(80.dp),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+        )
 
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = stringResource(R.string.review_kosong),
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = stringResource(R.string.belum_ada_ulasan),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+    }
 }
 
 
@@ -548,48 +584,111 @@ fun LazyReview(menuId: Int, viewModel: DetailViewModel, userId: String){
 fun ReviewItems(review: Review){
     Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
+            .fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ){
+        val grayColor = if (isSystemInDarkTheme()) Color.DarkGray else Color.LightGray
         Row (
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(1.dp, grayColor, RoundedCornerShape(16.dp))
+                .padding(8.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ){
             Column (
                 modifier = Modifier.fillMaxHeight(),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ){
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.baseline_account_circle_24),
+                        contentDescription = null
+                    )
+                    Text(
+                        text = review.email,
+                        maxLines = 1,
+                        modifier = Modifier.width(150.dp),
+                        overflow = TextOverflow.Ellipsis,
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
                 Text(
                     text = review.review,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.width(150.dp),
                     fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.secondary
                 )
-                Text(
-                    text = review.star.toString(),
-                    color = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.width(200.dp),
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    repeat(5) { index ->
+                        val starNumber = index + 1
+                        val starColor = if (starNumber <= review.star) Color(0xFFFFD700) else Color.LightGray
+
+                        Icon(
+                            imageVector = Icons.Filled.Star,
+                            contentDescription = "Bintang $starNumber",
+                            tint = starColor,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
             }
-            Box(
-                modifier = Modifier.size(100.dp)
-            ){
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(review.imageUrl)
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(RoundedCornerShape(8.dp))
-                )
+            if (review.imageUrl != null){
+                Box(
+                    modifier = Modifier.size(100.dp)
+                ){
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(review.imageUrl)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(8.dp))
+                    )
+                }
+            }else{
+                EmptyImagePlaceholder()
             }
+        }
+    }
+}
+
+@Composable
+fun EmptyImagePlaceholder(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .size(100.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.ImageNotSupported,
+                contentDescription = null,
+                modifier = Modifier.size(28.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+            )
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Text(
+                text = stringResource(R.string.noImage),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+            )
         }
     }
 }

@@ -95,12 +95,15 @@ fun HistoryDetail(navController: NavHostController, id: Long){
     var showAlert by remember { mutableStateOf(false) }
     var kategori by remember { mutableStateOf("") }
     var menuId by remember { mutableIntStateOf(0) }
+    var orderId by remember { mutableIntStateOf(0) }
+    var isReviewed by remember { mutableStateOf(false) }
 
 
     LaunchedEffect(user.email) {
         if (user.email.isEmpty()) return@LaunchedEffect
         val data = viewModel.getDetailHistory(user.email, id.toInt()) ?: return@LaunchedEffect
 
+        orderId = data.order.id
         menuId = data.menu.id
         nama = data.menu.nama
         kategori = data.menu.kategori
@@ -108,6 +111,8 @@ fun HistoryDetail(navController: NavHostController, id: Long){
         totalHarga = data.order.totalBayar
         quantity = data.order.quantity
         catatan = data.order.catatan
+
+        isReviewed = viewModel.checkIfOrderReviewed(orderId, user.email)
     }
     Scaffold(
         topBar = {
@@ -137,6 +142,7 @@ fun HistoryDetail(navController: NavHostController, id: Long){
     ) { innerPadding ->
         HistoryDetailContent(
             Modifier.padding(innerPadding),
+            orderId,
             harga,
             catatan,
             nama,
@@ -149,7 +155,9 @@ fun HistoryDetail(navController: NavHostController, id: Long){
             },
             status,
             viewModel,
-            menuId
+            menuId,
+            isReviewed,
+            onReviewSuccess = { isReviewed = true }
         )
         if (showAlert){
             DisplayAlertDialog(onDismissRequest = {showAlert = false}) {
@@ -164,6 +172,7 @@ fun HistoryDetail(navController: NavHostController, id: Long){
 @Composable
 fun HistoryDetailContent(
     modifier: Modifier = Modifier,
+    orderId: Int,
     harga: Int,
     catatan: String?,
     nama: String,
@@ -174,11 +183,14 @@ fun HistoryDetailContent(
     onShowAlert: () -> Unit,
     status: ApiStatus,
     viewModel: HistoryDetailViewModel,
-    menuId: Int
+    menuId: Int,
+    isReviewed: Boolean,
+    onReviewSuccess: () -> Unit
 ){
     val grayColor = if (isSystemInDarkTheme()) Color.DarkGray else Color.LightGray
 
     when(status){
+        ApiStatus.IDLE -> {}
         ApiStatus.LOADING -> {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = Color.MainGreen)
@@ -317,7 +329,23 @@ fun HistoryDetailContent(
                             )
                         }
                     }
-                    ReviewForm(kategori, userId, viewModel, menuId)
+                    if (!isReviewed){
+                        ReviewForm(kategori, userId, viewModel, menuId, orderId, onReviewSuccess)
+                    }else{
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 24.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Anda sudah memberikan ulasan untuk pesanan ini ✨",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.Gray,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -350,7 +378,7 @@ fun HistoryDetailContent(
 
 
 @Composable
-fun ReviewForm(kategori: String, userId: String, viewModel: HistoryDetailViewModel, menuId: Int){
+fun ReviewForm(kategori: String, userId: String, viewModel: HistoryDetailViewModel, menuId: Int, orderId: Int, onReviewSuccess: () -> Unit){
     var review by remember { mutableStateOf("") }
     var star by remember { mutableIntStateOf(0) }
     val context = LocalContext.current
@@ -361,6 +389,14 @@ fun ReviewForm(kategori: String, userId: String, viewModel: HistoryDetailViewMod
         bitmap = getCroppedImage(context.contentResolver, it)
         if (bitmap != null) {
             Toast.makeText(context, "Foto berhasil diupload", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    LaunchedEffect(uploadStatus) {
+        if (uploadStatus == ApiStatus.SUCCESS) {
+            onReviewSuccess()
+        } else if (uploadStatus == ApiStatus.FAILED) {
+            Toast.makeText(context, "Gagal mengirim review, coba lagi", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -445,20 +481,15 @@ fun ReviewForm(kategori: String, userId: String, viewModel: HistoryDetailViewMod
             }
             Button(
                 onClick = {
-                    if (review.trim() != "" || star != 0){
+                    if (review.trim().isNotEmpty() && star != 0){
                         viewModel.insertReview(
                             review,
                             star,
                             menuId,
                             userId,
-                            bitmap
+                            bitmap,
+                            orderId
                         )
-                        if (uploadStatus == ApiStatus.SUCCESS){
-                            Toast.makeText(context, "Berhasil mengirim review", Toast.LENGTH_SHORT).show()
-                        }else if (uploadStatus == ApiStatus.FAILED){
-                            Toast.makeText(context, "Gagal mengirim review", Toast.LENGTH_SHORT).show()
-                        }
-
                     }else{
                         Toast.makeText(context, "Review atau bintang tidak boleh kosong", Toast.LENGTH_SHORT).show()
                     }
@@ -470,9 +501,11 @@ fun ReviewForm(kategori: String, userId: String, viewModel: HistoryDetailViewMod
                 ),
                 modifier = Modifier
             ) {
-                Text(
-                    text = stringResource(R.string.kirim)
-                )
+                if (uploadStatus == ApiStatus.LOADING) {
+                    CircularProgressIndicator(color = Color.TextGreen, modifier = Modifier.size(20.dp))
+                } else {
+                    Text(text = stringResource(R.string.kirim))
+                }
             }
         }
     }
